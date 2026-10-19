@@ -11,3 +11,6 @@ wydanie/
 *.gguf
 .DS_Store
 .coverage
+*.egg-info/
+build/
+dist/

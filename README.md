@@ -2,7 +2,7 @@
 
 **A small, fast Polish decision model. It does not write text: it reads a document and picks an answer from a fixed list, with a calibrated probability.**
 
-> 🇵🇱 **Po polsku:** Jerzyk to mały (322 mln parametrów), szybki model AI dla polskich dokumentów. Czyta pismo z sądu lub urzędu, dokument księgowy albo e-mail klienta i odpowiada na pytania z gotową listą odpowiedzi: jaki to rodzaj pisma, czy biegnie termin, jak bardzo jest pilne, do którego działu je skierować. Każda odpowiedź ma prawdopodobieństwo, więc niepewne przypadki można oddać człowiekowi. Działa lokalnie, także na zwykłym laptopie bez karty graficznej (ok. 0,05–0,2 s na pismo), więc dokumenty nie opuszczają firmy. Licencja Apache 2.0. Razem z modelem udostępniamy **jerzyk-bench**, polski benchmark modeli decyzyjnych dla korespondencji urzędowej, i bibliotekę `deadlines.py`, która liczy terminy według KPC/KPA (soboty, święta).
+> 🇵🇱 **Po polsku:** Jerzyk to mały (322 mln parametrów), szybki model AI dla polskich dokumentów. Czyta pismo z sądu lub urzędu, dokument księgowy albo e-mail klienta i odpowiada na pytania z gotową listą odpowiedzi: jaki to rodzaj pisma, czy biegnie termin, jak bardzo jest pilne, do którego działu je skierować. Działa lokalnie, także na laptopie bez karty graficznej. Licencja Apache 2.0. Razem z modelem udostępniamy **jerzyk-bench**, polski benchmark modeli decyzyjnych, oraz moduł `jerzyk.deadlines`, który liczy terminy według KPC/KPA (soboty, święta).
 
 ```text
 Document: "Sygn. akt I C 412/26 … wzywa się pełnomocnika powoda do uzupełnienia braków formalnych
@@ -11,8 +11,67 @@ Document: "Sygn. akt I C 412/26 … wzywa się pełnomocnika powoda do uzupełni
 rodzaj  (document type)     → wezwanie_sadu (court summons)     99.8%
 termin  (deadline running?) → yes                               91.1%
 pilnosc (urgency 0–3)       → 3 – critical (≤ 7 days)           99.2%
-deadlines.py                → delivered 3 Nov 2026 → due 10 Nov 2026
+deadlines                   → delivered 3 Nov 2026 → due 10 Nov 2026
 ```
+
+## Quick start
+
+```bash
+uv venv --python 3.11 .venv
+uv pip install --python .venv/bin/python -e ".[serve]"
+# or straight from GitHub:
+# pip install "jerzyk[serve] @ git+https://github.com/Trenify-Org/jerzyk"
+# the model (trenify/jerzyk-1.0, 650 MB) downloads from Hugging Face on first use
+```
+
+**Python**
+
+```python
+from jerzyk import Jerzyk
+
+j = Jerzyk("trenify/jerzyk-1.0")   # or a local folder
+j.ask("Dzień dobry, od rana nie mogę zalogować się do aplikacji i opłacić faktury…", domain="email")
+# {'dzial': ('platnosci_i_faktury', 0.998), 'rezygnacja': (False, 0.943),
+#  'zdenerwowany': (False, 0.675), 'pilnosc': (2, 0.623)}
+```
+
+Domains with ready-made questions: `court`, `admin` (administrative / building permits), `accounting`, `email` (customer e-mail). The Polish codes `sad`, `adm`, `ksieg` used in jerzyk-bench work too. You can also ask your own questions with `j.predict(text, questions)` in the `systemone` format (`choice`, `noul` = yes/no, `score`).
+
+**Server + demo page**
+
+```bash
+USE_TF=0 jerzyk-serve --port 8080      # or: python -m jerzyk.serve --port 8080; --model trenify/jerzyk-1.0 or a local folder
+open http://127.0.0.1:8080             # demo page
+curl -s localhost:8080/v1/systemone -H 'content-type: application/json' -d '{
+  "state": "Faktura VAT nr FV/12/2026 … termin płatności 14 dni",
+  "questions": {"rodzaj": {"type": "choice", "instructions": "Jaki to dokument?",
+                 "criteria": {"faktura": "faktura VAT", "umowa": "umowa", "inne": "inne"}}}}'
+```
+
+The server has no authentication and listens only on `127.0.0.1`. Do not expose it with `--host 0.0.0.0` unless it runs behind your own access control (see [`SECURITY.md`](SECURITY.md)).
+
+**Tests** (no model needed): `python -m unittest discover -s tests -t .`
+
+**Deadlines**
+
+```python
+import datetime as dt
+from jerzyk import deadlines
+
+deadlines.nearest("… w terminie 7 dni od doręczenia …", delivery=dt.date(2026, 11, 3))
+# Deadline(date=2026-11-10, kind='from_delivery', …) — Saturdays and public holidays shift the deadline (KPC/KPA)
+```
+
+**Glossary.** Question names and answer options stay in Polish, because the model was trained on them.
+
+| Name | Meaning |
+|---|---|
+| `sad`, `adm`, `ksieg`, `email` | domain codes in jerzyk-bench: court, administrative, accounting, customer e-mail |
+| `rodzaj` | document type |
+| `termin` | is a deadline for the recipient running? (yes/no) |
+| `pilnosc` | urgency: 0 nothing to do, 1 no deadline or > 14 days, 2 8–14 days, 3 ≤ 7 days or immediately |
+| `kategoria_kosztu` | cost category (accounting) |
+| `dzial`, `rezygnacja`, `zdenerwowany` | e-mail: department, cancels or terminates?, customer upset? |
 
 ## Why
 
@@ -69,86 +128,31 @@ Models compared: [Jerzyk 1.0](https://huggingface.co/trenify/jerzyk-1.0) (calibr
 How to read the table:
 
 - **Jerzyk is best on average**, both on generated and on real documents, and is 5–60× faster than the other models.
-- **Where it wins:** urgency (`pilnosc`; the rules follow 7/14-day thresholds in [`SPEC.md`](SPEC.md)), deadlines in court letters, routing questions (e-mail department, cost category) and calibration (ECE).
+- **Where it wins:** urgency (`pilnosc`; the rules follow 7/14-day thresholds in [`docs/SPEC.md`](docs/SPEC.md)), deadlines in court letters, routing questions (e-mail department, cost category) and calibration (ECE).
 - **Where larger models win:** document type of generated court letters, and of real administrative notices (Bielik).
-- **Known weakness: deadlines in long real administrative notices** (Jerzyk 71%, Bielik 80%). Always use Jerzyk together with `deadlines.py` (rule-based deadline extraction), and route low-confidence answers to a person.
-- Jerzyk is trained on the conventions in `SPEC.md`. The other models see them for the first time (zero-shot), so the urgency comparison is not fully apples to apples.
+- **Known weakness: deadlines in long real administrative notices** (Jerzyk 71%, Bielik 80%). Always use Jerzyk together with `jerzyk.deadlines` (rule-based deadline extraction), and route low-confidence answers to a person.
+- Jerzyk is trained on the conventions in `docs/SPEC.md`. The other models see them for the first time (zero-shot), so the urgency comparison is not fully apples to apples.
 - The generated test documents were written by Bielik 11B (court, administrative, accounting) and Claude (e-mails). Jerzyk's training data was written by a different model (Qwen3 8B) and comes from real documents from other offices.
 - The real documents (court rulings from SAOS, public notices from samorzad.gov.pl) never overlap with training data. Notices in the test come from offices that do not appear in training.
 - 31 court-ruling fragments that start mid-text, with no "WYROK"/"POSTANOWIENIE" header, are reported separately (`sad_real_fragmenty_test`). Jerzyk 1.0 scores 80.6% on them.
 
-## Quick start
-
-```bash
-uv venv --python 3.11 .venv
-uv pip install --python .venv/bin/python -r requirements.txt
-# the model (trenify/jerzyk-1.0, 650 MB) downloads from Hugging Face on first use
-```
-
-**Python**
-
-```python
-from jerzyk import Jerzyk
-
-j = Jerzyk("trenify/jerzyk-1.0")   # or a local folder
-j.ask("Dzień dobry, od rana nie mogę zalogować się do aplikacji i opłacić faktury…", domain="email")
-# {'dzial': ('platnosci_i_faktury', 0.998), 'rezygnacja': (False, 0.943),
-#  'zdenerwowany': (False, 0.675), 'pilnosc': (2, 0.623)}
-```
-
-Domains with ready-made questions: `court`, `admin` (administrative / building permits), `accounting`, `email` (customer e-mail). The Polish codes `sad`, `adm`, `ksieg` used in jerzyk-bench work too. You can also ask your own questions with `j.predict(text, questions)` in the `systemone` format (`choice`, `noul` = yes/no, `score`).
-
-**Server + demo page**
-
-```bash
-USE_TF=0 .venv/bin/python jerzyk_serve.py --port 8080   # --model trenify/jerzyk-1.0 or a local folder
-open http://127.0.0.1:8080          # demo page
-curl -s localhost:8080/v1/systemone -H 'content-type: application/json' -d '{
-  "state": "Faktura VAT nr FV/12/2026 … termin płatności 14 dni",
-  "questions": {"rodzaj": {"type": "choice", "instructions": "Jaki to dokument?",
-                 "criteria": {"faktura": "faktura VAT", "umowa": "umowa", "inne": "inne"}}}}'
-```
-
-The server has no authentication and listens only on `127.0.0.1`. Do not expose it with `--host 0.0.0.0` unless it runs behind your own access control (see [`SECURITY.md`](SECURITY.md)).
-
-**Tests** (no model needed): `python -m unittest discover -p "test_*.py"`
-
-**Deadlines**
-
-```python
-import datetime as dt, deadlines
-deadlines.nearest("… w terminie 7 dni od doręczenia …", delivery=dt.date(2026, 11, 3))
-# Deadline(date=2026-11-10, kind='from_delivery', …) — Saturdays and public holidays shift the deadline (KPC/KPA)
-```
-
-**Glossary.** Question names and answer options stay in Polish, because the model was trained on them.
-
-| Name | Meaning |
-|---|---|
-| `sad`, `adm`, `ksieg`, `email` | domain codes in jerzyk-bench: court, administrative, accounting, customer e-mail |
-| `rodzaj` | document type |
-| `termin` | is a deadline for the recipient running? (yes/no) |
-| `pilnosc` | urgency: 0 nothing to do, 1 no deadline or > 14 days, 2 8–14 days, 3 ≤ 7 days or immediately |
-| `kategoria_kosztu` | cost category (accounting) |
-| `dzial`, `rezygnacja`, `zdenerwowany` | e-mail: department, cancels or terminates?, customer upset? |
-
 ## What is in this repository
 
-| File | Purpose |
+| Path | Purpose |
 |---|---|
-| `jerzyk.py`, `jerzyk_serve.py`, `demo/` | Python API, HTTP server (`/v1/systemone`, `/api/demo`), demo page |
-| `test_jerzyk.py` | Tests of calibration and the Python API (no model needed) |
-| `deadlines.py`, `test_deadlines.py` | Polish deadline extraction and computation (KC/KPC/KPA, Saturdays, holidays incl. Christmas Eve from 2025) |
-| `SPEC.md`, `tasks.py` | jerzyk-bench specification: questions, answer options, labelling rules and all decisions taken |
-| `gen_bench.py`, `precheck.py`, `review.py` | Generated test set: labels by construction from recipes, automatic checks, manual review in the terminal |
-| `saos.py`, `saos_2025.py`, `bip*.py`, `prawo.py` | Real documents: SAOS court rulings, public notices from samorzad.gov.pl |
-| `train_v1.py`, `run_v4.sh`, `calibrate.py` | Training data (generator, filter, build), training, temperature calibration on dev |
-| `evaluate.py`, `tabela.py`, `run_basal.sh` | Evaluation of any model (Jerzyk, `systemone` servers, LLMs via llama.cpp) and the results table |
-| `TRENING.md` | How to reproduce or improve the model on a Mac, an NVIDIA GPU or in the cloud (Polish) |
+| `jerzyk/` | The package. `model.py` (the `Jerzyk` class, calibration), `questions.py` (ready-made questions and answer options), `deadlines.py` (Polish deadline rules: KC/KPC/KPA, Saturdays, holidays incl. Christmas Eve from 2025), `serve.py` (HTTP server: `/v1/systemone`, `/api/demo`), `demo/` (demo page) |
+| `scripts/` | Data and evaluation tools, grouped by purpose (run from the repository root as `python -m scripts.<name>`) |
+| `scripts/` — benchmark | `generate_benchmark.py` (generated test and dev sets: labels by construction from recipes), `check_benchmark.py` (automatic checks), `review_benchmark.py` (manual review in the terminal) |
+| `scripts/` — real documents | `fetch_saos.py`, `build_saos_dev.py` (SAOS court rulings), `fetch_legal_sources.py` (legal texts), `collect_notice_urls.py`, `fetch_notices.py`, `notices_training_data.py` (public notices from samorzad.gov.pl), `anonymize_rulings.py` (anonymisation before publication) |
+| `scripts/` — training | `generate_training_data.py` (generate, check and build the training data), `calibrate.py` (temperature calibration on dev), `train.sh` (the training pipeline) |
+| `scripts/` — evaluation | `evaluate.py` (any model: Jerzyk, `systemone` servers, LLMs via llama.cpp), `evaluate_model.sh`, `evaluate_basal.sh`, `evaluate_published.sh`, `results_table.py` (results tables), `llm.py` (shared LLM helpers) |
+| `scripts/` — release | `build_release.py` (prepares the published version of the benchmark) |
+| `tests/` | Unit tests of the calibration, the API, the server, the questions, the deadlines and the scripts (no model needed) |
+| `docs/` | `SPEC.md`: jerzyk-bench specification, questions, answer options, labelling rules and all decisions taken. `TRAINING.md`: how to reproduce or improve the model on a Mac, an NVIDIA GPU or in the cloud |
 
 ## How it was built
 
-1. **Specification first.** [`SPEC.md`](SPEC.md) defines every question and the labelling rules. For example: an invoice payment term is not a "deadline"; urgency 3 means ≤ 7 days; a threat of court in an e-mail means the customer is upset.
+1. **Specification first.** [`docs/SPEC.md`](docs/SPEC.md) defines every question and the labelling rules. For example: an invoice payment term is not a "deadline"; urgency 3 means ≤ 7 days; a threat of court in an e-mail means the customer is upset.
 2. **Labels by construction.** The generator gets a recipe (document type, deadline, urgency) and writes a document that matches it. Automatic checks and a second model reject documents that drift from the recipe.
 3. **Real documents.** About 500 court rulings from SAOS with document type from metadata, and 84 public notices from municipal and county offices, with deadline and urgency from rules. The rules agree with manual labels in 91% of cases.
 4. **Fine-tuning** of [Laya multilingual](https://huggingface.co/convaiinnovations/laya-multilingual) (322M, mmBERT encoder) for 4 epochs.
@@ -160,8 +164,8 @@ No training data comes from closed-model APIs. Generators and filters are open-w
 
 - Polish documents only. Input is truncated to about 1024 tokens (about 3,000 characters), so a deadline at the end of a long notice may be missed.
 - Not legal advice. Jerzyk helps sort and prioritise correspondence. A person must check deadlines and decisions with consequences, especially low-confidence ones.
-- The real-document test set is small (145 documents). The 56 administrative notices were labelled following `SPEC.md` with Claude's help, and human review is in progress.
-- Urgency follows the conventions in `SPEC.md`. Your organisation may need different thresholds, so retrain on your own data as described in `TRENING.md`.
+- The real-document test set is small (145 documents). The 56 administrative notices were labelled following `docs/SPEC.md` with Claude's help, and human review is in progress.
+- Urgency follows the conventions in `docs/SPEC.md`. Your organisation may need different thresholds, so retrain on your own data as described in [`docs/TRAINING.md`](docs/TRAINING.md).
 
 ## About
 

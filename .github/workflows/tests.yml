@@ -17,4 +17,4 @@ jobs:
           python-version: "3.11"
       # the tests use a fake model, so neither laya nor torch is needed
       - run: pip install "fastapi>=0.115" "httpx>=0.27" "uvicorn>=0.30"
-      - run: python -m unittest discover -p "test_*.py" -v
+      - run: python -m unittest discover -s tests -t . -v

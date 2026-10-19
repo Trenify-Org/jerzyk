@@ -1,0 +1,142 @@
+{
+ "adm": {
+  "pilnosc": {
+   "criteria": [
+    "niska – nic nie trzeba robić",
+    "średnia – trzeba coś zrobić, ale bez terminu albo termin dłuższy niż 14 dni",
+    "wysoka – termin od 8 do 14 dni",
+    "krytyczna – termin do 7 dni, niezwłocznie albo już minął"
+   ],
+   "instructions": "Jak pilne jest to pismo?",
+   "type": "score"
+  },
+  "rodzaj": {
+   "criteria": {
+    "decyzja": "decyzja administracyjna (warunki zabudowy, pozwolenie na budowę, inna)",
+    "inne": "faktury, reklamy, informacje ogólne",
+    "korespondencja_projektowa": "pismo lub e-mail inwestora, wykonawcy albo projektanta branżowego",
+    "postanowienie": "postanowienie organu administracji",
+    "sprzeciw_zgloszenia": "sprzeciw do zgłoszenia robót albo informacja o braku sprzeciwu",
+    "uzgodnienie_opinia": "uzgodnienie, opinia lub warunki od gestora sieci, konserwatora, zarządcy drogi, rzeczoznawcy",
+    "wezwanie_do_uzupelnienia": "wezwanie do usunięcia braków, uzupełnienia dokumentów lub wyjaśnień",
+    "zawiadomienie": "zawiadomienie lub obwieszczenie o wszczęciu, zebraniu materiału, wydaniu decyzji, przedłużeniu terminu lub oględzinach"
+   },
+   "instructions": "Jaki to rodzaj dokumentu?",
+   "type": "choice"
+  },
+  "termin": {
+   "instructions": "Czy pismo wymaga od adresata podjęcia czynności w określonym czasie albo otwiera mu taki termin (zapłata, uzupełnienie, odpowiedź, środek zaskarżenia, stawiennictwo)?",
+   "type": "noul"
+  }
+ },
+ "email": {
+  "dzial": {
+   "criteria": {
+    "inne": "inne sprawy",
+    "platnosci_i_faktury": "płatności, faktury, rozliczenia",
+    "reklamacje_i_zwroty": "reklamacje, zwroty, wadliwy produkt",
+    "sprzedaz": "pytania o ofertę, ceny, dostępność",
+    "wsparcie_techniczne": "problemy z działaniem usługi lub produktu",
+    "zamowienia_i_dostawy": "status zamówienia, dostawa, zmiana zamówienia"
+   },
+   "instructions": "Do którego działu powinna trafić wiadomość?",
+   "type": "choice"
+  },
+  "pilnosc": {
+   "criteria": [
+    "niska – pytanie ogólne, podziękowanie, informacja",
+    "średnia – sprawa do załatwienia, nic nie jest zablokowane",
+    "wysoka – klient jest zablokowany (nie może zamówić, zapłacić, skorzystać z usługi)",
+    "krytyczna – trwająca szkoda lub przestój, bezpieczeństwo, groźba sądu lub mediów, termin dziś"
+   ],
+   "instructions": "Jak pilna jest wiadomość?",
+   "type": "score"
+  },
+  "rezygnacja": {
+   "instructions": "Czy klient chce zrezygnować, wypowiedzieć umowę lub zamknąć konto?",
+   "type": "noul"
+  },
+  "zdenerwowany": {
+   "instructions": "Czy klient wyraża wyraźne niezadowolenie lub złość?",
+   "type": "noul"
+  }
+ },
+ "ksieg": {
+  "kategoria_kosztu": {
+   "criteria": {
+    "materialy": "materiały i surowce",
+    "media_i_telekomunikacja": "energia, woda, telefon, internet",
+    "najem": "najem lub dzierżawa",
+    "nie_dotyczy": "dokument nie jest kosztem",
+    "paliwo_i_samochod": "paliwo, serwis i eksploatacja samochodu",
+    "reprezentacja": "reprezentacja (catering, upominki dla kontrahentów)",
+    "srodek_trwaly": "środek trwały (sprzęt, maszyny powyżej progu)",
+    "szkolenia": "szkolenia i konferencje",
+    "towary_handlowe": "towary do dalszej odsprzedaży",
+    "uslugi_obce": "usługi obce (doradztwo, IT, sprzątanie, transport)"
+   },
+   "instructions": "Do jakiej kategorii kosztu należy dokument?",
+   "type": "choice"
+  },
+  "pilnosc": {
+   "criteria": [
+    "niska – nic nie trzeba robić",
+    "średnia – trzeba coś zrobić, ale bez terminu albo termin dłuższy niż 14 dni",
+    "wysoka – termin od 8 do 14 dni",
+    "krytyczna – termin do 7 dni, niezwłocznie albo już minął"
+   ],
+   "instructions": "Jak pilne jest to pismo?",
+   "type": "score"
+  },
+  "rodzaj": {
+   "criteria": {
+    "faktura": "faktura VAT lub rachunek",
+    "faktura_korygujaca": "faktura korygująca",
+    "inne": "inna korespondencja",
+    "nota": "nota księgowa lub obciążeniowa",
+    "paragon": "paragon fiskalny",
+    "pismo_us": "pismo z urzędu skarbowego lub KAS",
+    "pismo_zus": "pismo z ZUS",
+    "umowa": "umowa lub aneks",
+    "wezwanie_do_zaplaty": "wezwanie do zapłaty od kontrahenta",
+    "wyciag_bankowy": "wyciąg bankowy"
+   },
+   "instructions": "Jaki to rodzaj dokumentu?",
+   "type": "choice"
+  },
+  "termin": {
+   "instructions": "Czy pismo wymaga od adresata podjęcia czynności w określonym czasie albo otwiera mu taki termin (zapłata, uzupełnienie, odpowiedź, środek zaskarżenia, stawiennictwo)?",
+   "type": "noul"
+  }
+ },
+ "sad": {
+  "pilnosc": {
+   "criteria": [
+    "niska – nic nie trzeba robić",
+    "średnia – trzeba coś zrobić, ale bez terminu albo termin dłuższy niż 14 dni",
+    "wysoka – termin od 8 do 14 dni",
+    "krytyczna – termin do 7 dni, niezwłocznie albo już minął"
+   ],
+   "instructions": "Jak pilne jest to pismo?",
+   "type": "score"
+  },
+  "rodzaj": {
+   "criteria": {
+    "inne": "korespondencja niesądowa",
+    "nakaz_zaplaty": "nakaz zapłaty (upominawczy, nakazowy, EPU)",
+    "pismo_strony": "odpowiedź na pozew, apelacja, zażalenie lub pismo przygotowawcze strony",
+    "pismo_wszczynajace": "pozew, wniosek lub akt oskarżenia złożony przez stronę",
+    "postanowienie": "postanowienie sądu lub referendarza",
+    "wezwanie_sadu": "wezwanie, zobowiązanie lub zarządzenie sądu nakładające obowiązek",
+    "wyrok": "wyrok sądu (każdej instancji)",
+    "zawiadomienie_o_terminie": "zawiadomienie lub wezwanie na rozprawę albo posiedzenie"
+   },
+   "instructions": "Jaki to rodzaj dokumentu?",
+   "type": "choice"
+  },
+  "termin": {
+   "instructions": "Czy pismo wymaga od adresata podjęcia czynności w określonym czasie albo otwiera mu taki termin (zapłata, uzupełnienie, odpowiedź, środek zaskarżenia, stawiennictwo)?",
+   "type": "noul"
+  }
+ }
+}

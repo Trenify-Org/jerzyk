@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jerzyk"
+version = "1.0.0"
+description = "A small Polish decision model for official correspondence, with calibrated answers and Polish deadline rules"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+authors = [{ name = "Fundacja Trenify" }]
+keywords = ["polish", "decision model", "document classification", "legal", "deadlines"]
+classifiers = [
+  "Natural Language :: Polish",
+  "Programming Language :: Python :: 3",
+  "Topic :: Text Processing :: Linguistic",
+]
+dependencies = ["laya==0.4.8", "huggingface_hub>=0.25"]
+
+[project.optional-dependencies]
+serve = ["fastapi>=0.115", "uvicorn>=0.30"]
+data = ["pypdf>=5.0"]
+test = ["fastapi>=0.115", "uvicorn>=0.30", "httpx>=0.27"]
+
+[project.scripts]
+jerzyk-serve = "jerzyk.serve:main"
+
+[project.urls]
+Model = "https://huggingface.co/trenify/jerzyk-1.0"
+Benchmark = "https://huggingface.co/datasets/trenify/jerzyk-bench"
+Source = "https://github.com/Trenify-Org/jerzyk"
+
+[tool.setuptools]
+packages = ["jerzyk"]
+
+[tool.setuptools.package-data]
+jerzyk = ["demo/index.html"]

@@ -1,0 +1,314 @@
+{
+ "adm": [
+  [
+   "decyzja",
+   "pozwolenie na budowę z pouczeniem o odwołaniu w terminie 14 dni od doręczenia",
+   true,
+   2
+  ],
+  [
+   "decyzja",
+   "decyzja o warunkach zabudowy z pouczeniem o odwołaniu w terminie 14 dni",
+   true,
+   2
+  ],
+  [
+   "decyzja",
+   "decyzja organu drugiej instancji z pouczeniem o skardze do WSA w terminie 30 dni",
+   true,
+   1
+  ],
+  [
+   "postanowienie",
+   "z pouczeniem o zażaleniu w terminie 7 dni",
+   true,
+   3
+  ],
+  [
+   "postanowienie",
+   "niezaskarżalne, doręczane do wiadomości",
+   false,
+   0
+  ],
+  [
+   "wezwanie_do_uzupelnienia",
+   "uzupełnienie dokumentów w terminie 7 dni pod rygorem pozostawienia bez rozpoznania",
+   true,
+   3
+  ],
+  [
+   "wezwanie_do_uzupelnienia",
+   "złożenie wyjaśnień w terminie 14 dni",
+   true,
+   2
+  ],
+  [
+   "wezwanie_do_uzupelnienia",
+   "usunięcie nieprawidłowości w projekcie w terminie 30 dni",
+   true,
+   1
+  ],
+  [
+   "zawiadomienie",
+   "o zebraniu materiału dowodowego i prawie wypowiedzenia się w terminie 7 dni",
+   true,
+   3
+  ],
+  [
+   "zawiadomienie",
+   "o oględzinach nieruchomości wyznaczonych na {d10}",
+   true,
+   2
+  ],
+  [
+   "zawiadomienie",
+   "o przedłużeniu terminu załatwienia sprawy",
+   false,
+   0
+  ],
+  [
+   "zawiadomienie",
+   "o wszczęciu postępowania, bez wzywania do działania",
+   false,
+   0
+  ],
+  [
+   "sprzeciw_zgloszenia",
+   "sprzeciw do zgłoszenia robót z pouczeniem o odwołaniu w terminie 14 dni",
+   true,
+   2
+  ],
+  [
+   "sprzeciw_zgloszenia",
+   "zaświadczenie o braku podstaw do wniesienia sprzeciwu",
+   false,
+   0
+  ],
+  [
+   "uzgodnienie_opinia",
+   "warunki przyłączenia do sieci ważne dwa lata, bez wymaganych działań",
+   false,
+   0
+  ],
+  [
+   "uzgodnienie_opinia",
+   "uzgodnienie z uwagami do uwzględnienia w projekcie, bez terminu",
+   false,
+   1
+  ],
+  [
+   "korespondencja_projektowa",
+   "inwestor prosi o zmianę w projekcie, bez terminu",
+   false,
+   1
+  ],
+  [
+   "korespondencja_projektowa",
+   "inwestor prosi o poprawki do {d3}",
+   true,
+   3
+  ],
+  [
+   "korespondencja_projektowa",
+   "wykonawca informuje o postępie prac",
+   false,
+   0
+  ],
+  [
+   "inne",
+   "faktura za oprogramowanie projektowe",
+   false,
+   0
+  ],
+  [
+   "inne",
+   "oferta szkolenia lub reklama",
+   false,
+   0
+  ]
+ ],
+ "ksieg": [
+  [
+   "faktura",
+   "zwykła faktura zakupowa",
+   false,
+   1
+  ],
+  [
+   "faktura_korygujaca",
+   "korekta ceny lub ilości",
+   false,
+   1
+  ],
+  [
+   "paragon",
+   "paragon za drobny zakup",
+   false,
+   1
+  ],
+  [
+   "nota",
+   "nota obciążeniowa lub księgowa",
+   false,
+   1
+  ],
+  [
+   "wyciag_bankowy",
+   "wyciąg z kilkoma operacjami",
+   false,
+   1
+  ],
+  [
+   "umowa",
+   "umowa lub aneks do zaksięgowania",
+   false,
+   1
+  ],
+  [
+   "pismo_us",
+   "wezwanie do złożenia wyjaśnień w terminie 7 dni",
+   true,
+   3
+  ],
+  [
+   "pismo_us",
+   "wezwanie do przedłożenia dokumentów w terminie 14 dni",
+   true,
+   2
+  ],
+  [
+   "pismo_us",
+   "informacja o dokonaniu zwrotu VAT",
+   false,
+   0
+  ],
+  [
+   "pismo_zus",
+   "informacja o zaległości z wezwaniem do zapłaty w terminie 7 dni",
+   true,
+   3
+  ],
+  [
+   "pismo_zus",
+   "informacja o stanie konta płatnika, bez zaległości",
+   false,
+   0
+  ],
+  [
+   "wezwanie_do_zaplaty",
+   "zapłata w terminie 7 dni",
+   true,
+   3
+  ],
+  [
+   "wezwanie_do_zaplaty",
+   "zapłata w terminie 14 dni",
+   true,
+   2
+  ],
+  [
+   "inne",
+   "reklama programu księgowego",
+   false,
+   0
+  ]
+ ],
+ "sad": [
+  [
+   "wyrok",
+   "z pouczeniem, że apelację wnosi się w terminie 14 dni od doręczenia wyroku z uzasadnieniem",
+   true,
+   2
+  ],
+  [
+   "wyrok",
+   "wyrok sądu drugiej instancji, prawomocny, bez pouczenia o środkach zaskarżenia",
+   false,
+   0
+  ],
+  [
+   "postanowienie",
+   "z pouczeniem o zażaleniu w terminie tygodnia od doręczenia",
+   true,
+   3
+  ],
+  [
+   "postanowienie",
+   "z pouczeniem o skardze na orzeczenie referendarza w terminie 7 dni",
+   true,
+   3
+  ],
+  [
+   "postanowienie",
+   "postanowienie dowodowe, niezaskarżalne, doręczane do wiadomości",
+   false,
+   0
+  ],
+  [
+   "nakaz_zaplaty",
+   "z terminem dwóch tygodni na zapłatę albo wniesienie sprzeciwu lub zarzutów",
+   true,
+   2
+  ],
+  [
+   "wezwanie_sadu",
+   "z terminem 7 dni pod rygorem",
+   true,
+   3
+  ],
+  [
+   "wezwanie_sadu",
+   "z terminem 14 dni",
+   true,
+   2
+  ],
+  [
+   "wezwanie_sadu",
+   "z terminem 21 dni",
+   true,
+   1
+  ],
+  [
+   "zawiadomienie_o_terminie",
+   "rozprawa wyznaczona na {d40}",
+   true,
+   1
+  ],
+  [
+   "zawiadomienie_o_terminie",
+   "rozprawa wyznaczona na {d10}",
+   true,
+   2
+  ],
+  [
+   "zawiadomienie_o_terminie",
+   "posiedzenie wyznaczone na {d5}",
+   true,
+   3
+  ],
+  [
+   "pismo_wszczynajace",
+   "odpis pozwu lub wniosku doręczony bez wezwania sądu do zajęcia stanowiska",
+   false,
+   1
+  ],
+  [
+   "pismo_strony",
+   "odpis pisma strony przeciwnej doręczony bez wezwania sądu",
+   false,
+   1
+  ],
+  [
+   "inne",
+   "e-mail klienta z pytaniem o stan sprawy",
+   false,
+   1
+  ],
+  [
+   "inne",
+   "newsletter lub oferta wydawnictwa prawniczego",
+   false,
+   0
+  ]
+ ]
+}
