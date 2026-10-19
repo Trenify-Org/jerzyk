@@ -103,7 +103,7 @@ Clarification (v3, 2026-10-18): the level follows from the content, not from the
 
 | set | per domain | total | use |
 |---|---|---|---|
-| test | 120 | 480 | evaluation only, 100% manual review |
+| test | 120 | 480 | evaluation only; labels by construction from recipes, rule-checked, not manually reviewed |
 | dev | 30 | 120 | calibration and choosing thresholds |
 | train | 1,000–2,000 | 4,000–8,000 | training Jerzyk, labels from Bielik, review of a sample |
 

@@ -124,7 +124,7 @@ Jerzyk is a **decision model** (a classifier with typed questions):
 | ECE, real documents (lower = better) | 0.104 | 0.127 | 0.197 | 0.142 |
 | Median latency per document (all models on the same computer) | 0.05 s | 0.28 s | 1.75 s | 3.01 s |
 
-Models compared: [Jerzyk 1.0](https://huggingface.co/trenify/jerzyk-1.0) (calibrated); [basal-2.0-mini](https://huggingface.co/Remek/basal-2.0-mini-MLX-8bit) (MLX 8-bit, native `/v1/systemone`); [Qwen3 8B](https://huggingface.co/Qwen/Qwen3-8B-GGUF) and [Bielik 11B v3.0 Instruct](https://huggingface.co/speakleash/Bielik-11B-v3.0-Instruct-GGUF) (GGUF Q4_K_M in llama.cpp, zero-shot, answer chosen from option log-probabilities).
+Models compared: [Jerzyk 1.0](https://huggingface.co/trenify/jerzyk-1.0) (calibrated); [basal-2.0-mini](https://huggingface.co/Remek/basal-2.0-mini-MLX-8bit) (MLX 8-bit, native `/v1/systemone`); [Qwen3 8B](https://huggingface.co/Qwen/Qwen3-8B-GGUF) and [Bielik 11B v3.0 Instruct](https://huggingface.co/speakleash/Bielik-11B-v3.0-Instruct-GGUF) (GGUF Q4_K_M in llama.cpp, zero-shot, answer chosen from option log-probabilities). *Mean over domains* averages the questions of each domain first, then the domains, so every domain counts equally.
 
 > **Note.** These results were measured on the benchmark text before anonymisation of the real documents (names of judges, officials and private persons replaced with placeholders such as `[SĘDZIA]` and `[OSOBA]`). On the published, anonymised text Jerzyk 1.0 scores 85.5% instead of 85.8% on real documents. The other models will be re-measured on the published text in a later update.
 
@@ -158,17 +158,22 @@ How to read the table:
 
 1. **Specification first.** [`docs/SPEC.md`](docs/SPEC.md) defines every question and the labelling rules. For example: an invoice payment term is not a "deadline"; urgency 3 means ≤ 7 days; a threat of court in an e-mail means the customer is upset.
 2. **Labels by construction.** The generator gets a recipe (document type, deadline, urgency) and writes a document that matches it. Automatic checks and a second model reject documents that drift from the recipe.
-3. **Real documents.** About 500 court rulings from SAOS with document type from metadata, and 84 public notices from municipal and county offices, with deadline and urgency from rules. The rules agree with manual labels in 91% of cases.
+3. **Real documents.** About 500 court rulings from SAOS with document type from metadata, and 84 public notices from municipal and county offices, with deadline and urgency from rules.
 4. **Fine-tuning** of [Laya multilingual](https://huggingface.co/convaiinnovations/laya-multilingual) (322M, mmBERT encoder) for 4 epochs.
 5. **Calibration.** One temperature per question type, fitted on the dev split, never on the test split.
 
 No training data comes from closed-model APIs. Generators and filters are open-weight Apache-2.0 models (Qwen3, Bielik), plus official documents.
+
+## Related work
+
+[basal](https://github.com/rkinas/basal) also answers typed questions (`choice`, yes/no, `score`) with calibrated probabilities through a native `/v1/systemone` API, and is one of the compared models. Jerzyk is smaller (322M against 1.5B for basal-2.0-mini) and specialised in Polish official correspondence with ready-made questions; basal is a general model for Polish and English, where you describe the classes in each request.
 
 ## Limitations
 
 - Polish documents only. Input is truncated to about 1024 tokens (about 3,000 characters), so a deadline at the end of a long notice may be missed.
 - Not legal advice. Jerzyk helps sort and prioritise correspondence. A person must check deadlines and decisions with consequences, especially low-confidence ones.
 - The real-document test set is small (145 documents). The 56 administrative notices were labelled by Claude following `docs/SPEC.md`, then checked by two independent blind re-labellings and a rule check, with disagreements adjudicated against the SPEC (11 notices corrected, 2026-10-19). They have not been reviewed by a human annotator.
+- Urgency on real administrative notices is the weakest result: 58.9% (95% CI 46–71).
 - Urgency follows the conventions in `docs/SPEC.md`. Your organisation may need different thresholds, so retrain on your own data as described in [`docs/TRAINING.md`](docs/TRAINING.md).
 
 ## About

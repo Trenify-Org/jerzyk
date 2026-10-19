@@ -172,7 +172,9 @@ def main():
           "[basal-2.0-mini](https://huggingface.co/Remek/basal-2.0-mini-MLX-8bit) (MLX 8-bit, native `/v1/systemone`); "
           "[Qwen3 8B](https://huggingface.co/Qwen/Qwen3-8B-GGUF) and "
           "[Bielik 11B v3.0 Instruct](https://huggingface.co/speakleash/Bielik-11B-v3.0-Instruct-GGUF) "
-          "(GGUF Q4_K_M in llama.cpp, zero-shot, answer chosen from option log-probabilities).")
+          "(GGUF Q4_K_M in llama.cpp, zero-shot, answer chosen from option log-probabilities). "
+          "*Mean over domains* averages the questions of each domain first, then the domains, "
+          "so every domain counts equally.")
 
 
 if __name__ == "__main__":
