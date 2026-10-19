@@ -71,7 +71,7 @@ def load_temperatures(model):
     for suffix in CALIBRATION_SUFFIXES:
         f = Path(str(model).rstrip("/") + suffix)
         if f.exists():
-            return json.loads(f.read_text())
+            return json.loads(f.read_text(encoding="utf-8"))
     return {}
 
 
@@ -116,12 +116,12 @@ def main():
     args = ap.parse_args()
     ask = {"llm": ask_llm, "systemone": ask_systemone, "laya": ask_laya, "ensemble": ask_ensemble}[args.kind]
     if args.calibration:
-        temperatures, raw_ask = json.loads(Path(args.calibration).read_text()), ask
+        temperatures, raw_ask = json.loads(Path(args.calibration).read_text(encoding="utf-8")), ask
 
         def ask(url, state, questions):  # noqa: F811 — p_i ∝ p_i^(1/T), separately per question type
             return apply_temperatures(raw_ask(url, state, questions), questions, temperatures)
 
-    rows = [json.loads(l) for f in args.files for l in Path(f).read_text().splitlines() if l.strip()]
+    rows = [json.loads(l) for f in args.files for l in Path(f).read_text(encoding="utf-8").splitlines() if l.strip()]
     rows = [r for r in rows if r.get("ok", True)]  # skip letters marked as wrong during review
     ask(args.url, rows[0]["state"], rows[0]["questions"])  # warm-up
 
@@ -170,7 +170,7 @@ def main():
     print(json.dumps(result, ensure_ascii=False, indent=2))
     out = ROOT / "results"
     out.mkdir(exist_ok=True)
-    (out / f"bench-{args.name}.json").write_text(json.dumps({"result": result, "details": detail}, ensure_ascii=False, indent=2))
+    (out / f"bench-{args.name}.json").write_text(json.dumps({"result": result, "details": detail}, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 if __name__ == "__main__":

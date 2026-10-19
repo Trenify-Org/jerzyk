@@ -15,7 +15,7 @@ without quoting the data. We will remove it.
 
 ## Running the server
 
-`jerzyk_serve.py` has no authentication. By default it listens only on `127.0.0.1`. Do not expose it to a network
+`jerzyk-serve` (`jerzyk/serve.py`) has no authentication. By default it listens only on `127.0.0.1`. Do not expose it to a network
 (`--host 0.0.0.0`) unless it runs behind your own access control (a reverse proxy with authentication, a VPN).
 The server limits request size (100,000 characters of text, 32 questions) and handles one prediction at a time.
 

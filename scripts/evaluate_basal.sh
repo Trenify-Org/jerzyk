@@ -2,9 +2,11 @@
 # Measures basal models (github.com/rkinas/basal, Apache 2.0) on jerzyk-bench through their native /v1/systemone (MLX on a Mac).
 # Usage: scripts/evaluate_basal.sh [mini 4.5B max]
 cd "$(dirname "$0")/.." || exit 1
+mkdir -p logs results
 TEST="data/bench/sad_test.jsonl data/bench/adm_test.jsonl data/bench/ksieg_test.jsonl data/bench/email_test.jsonl"
 REAL="data/bench/sad_real_test.jsonl data/bench/adm_real_test.jsonl"
-for m in ${@:-mini 4.5B max}; do
+[ $# -eq 0 ] && set -- mini 4.5B max   # default: all three basal models
+for m in "$@"; do
   name=basal-2.0-$m; [ "$m" = mini ] && repo=Remek/basal-2.0-mini-MLX-8bit || repo=Remek/basal-2.0-$m-MLX-8bit
   [ "$m" = max ] && repo=Remek/basal-2.0-max-MLX-8bit
   .venv-basal/bin/basal-serve --model "$repo" --mode mlx --port 9950 > "logs/serve-$name.log" 2>&1 &

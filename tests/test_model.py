@@ -60,12 +60,12 @@ class TestCalibrate(unittest.TestCase):
 class TestLoadCalibration(unittest.TestCase):
     def test_reads_calibration_json(self):
         with tempfile.TemporaryDirectory() as d:
-            (Path(d) / "calibration.json").write_text(json.dumps({"choice": 2.6}))
+            (Path(d) / "calibration.json").write_text(json.dumps({"choice": 2.6}), encoding="utf-8")
             self.assertEqual(load_calibration(d), {"choice": 2.6})
 
     def test_falls_back_to_old_name(self):
         with tempfile.TemporaryDirectory() as d:
-            (Path(d) / "kalibracja.json").write_text(json.dumps({"noul": 1.75}))
+            (Path(d) / "kalibracja.json").write_text(json.dumps({"noul": 1.75}), encoding="utf-8")
             self.assertEqual(load_calibration(d), {"noul": 1.75})
 
     def test_missing_file_means_no_calibration(self):

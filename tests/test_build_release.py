@@ -10,13 +10,14 @@ import unittest
 from pathlib import Path
 
 from scripts.build_release import (
+    copy_required,
     TEST_FILES, build_model, clean_folder, clean_row, copy_code, copy_templates, fill_markers, write_dataset,
 )
 
 
 def _write(path, text=""):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text)
+    path.write_text(text, encoding="utf-8")
 
 
 class TestCleanFolder(unittest.TestCase):
@@ -24,11 +25,11 @@ class TestCleanFolder(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
             (root / ".git").mkdir()
-            (root / ".git" / "HEAD").write_text("ref: refs/heads/main\n")
-            (root / ".gitignore").write_text("x\n")
-            (root / "old.py").write_text("")
+            (root / ".git" / "HEAD").write_text("ref: refs/heads/main\n", encoding="utf-8")
+            (root / ".gitignore").write_text("x\n", encoding="utf-8")
+            (root / "old.py").write_text("", encoding="utf-8")
             (root / "demo").mkdir()
-            (root / "demo" / "index.html").write_text("")
+            (root / "demo" / "index.html").write_text("", encoding="utf-8")
             clean_folder(root)
             self.assertEqual([p.name for p in root.iterdir()], [".git"])
             self.assertTrue((root / ".git" / "HEAD").exists())
@@ -36,6 +37,21 @@ class TestCleanFolder(unittest.TestCase):
     def test_missing_folder_is_fine(self):
         with tempfile.TemporaryDirectory() as d:
             clean_folder(Path(d) / "nope")
+
+
+class TestCopyRequired(unittest.TestCase):
+    def test_copies_existing_file(self):
+        with tempfile.TemporaryDirectory() as d:
+            src, dst = Path(d) / "a.md", Path(d) / "b.md"
+            src.write_text("x", encoding="utf-8")
+            copy_required(src, dst)
+            self.assertEqual(dst.read_text(encoding="utf-8"), "x")
+
+    def test_missing_template_stops_with_a_clear_message(self):
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaises(SystemExit) as e:
+                copy_required(Path(d) / "hf-model-README.md", Path(d) / "README.md")
+            self.assertIn("hf-model-README.md", str(e.exception))
 
 
 class TestCleanRow(unittest.TestCase):
@@ -103,8 +119,8 @@ class TestCopyTemplates(unittest.TestCase):
             _write(templates / "github-.github" / "workflows" / "ci.yml", "on: push")
             github.mkdir()
             copy_templates(templates, github)
-            self.assertEqual((github / "README.md").read_text(), "github-README.md")
-            self.assertEqual((github / ".gitignore").read_text(), "github-.gitignore")
+            self.assertEqual((github / "README.md").read_text(encoding="utf-8"), "github-README.md")
+            self.assertEqual((github / ".gitignore").read_text(encoding="utf-8"), "github-.gitignore")
             self.assertFalse((github / "CITATION.cff").exists())  # template missing: skipped
             self.assertTrue((github / ".github" / "workflows" / "ci.yml").exists())
 
@@ -120,8 +136,8 @@ class TestBuildModel(unittest.TestCase):
             build_model(weights, model, templates)
             self.assertTrue((model / "model.safetensors").exists())
             self.assertFalse((model / "checkpoint_latest").exists())
-            self.assertEqual((model / "README.md").read_text(), "card")
-            self.assertEqual((model / "NOTICE").read_text(), "notice")
+            self.assertEqual((model / "README.md").read_text(encoding="utf-8"), "card")
+            self.assertEqual((model / "NOTICE").read_text(encoding="utf-8"), "notice")
 
 
 def _row(name):
@@ -139,8 +155,8 @@ class TestWriteDataset(unittest.TestCase):
             with contextlib.redirect_stdout(io.StringIO()):
                 write_dataset(bench, anonymised, out)
             self.assertEqual(sorted(p.name for p in out.iterdir()), sorted(f"{n}.jsonl" for n in TEST_FILES))
-            generated = json.loads((out / "sad_test.jsonl").read_text())
-            real = json.loads((out / "sad_real_test.jsonl").read_text())
+            generated = json.loads((out / "sad_test.jsonl").read_text(encoding="utf-8"))
+            real = json.loads((out / "sad_real_test.jsonl").read_text(encoding="utf-8"))
             self.assertEqual(generated["state"], "PESEL [PESEL]")
             self.assertEqual(real["state"], "PESEL 12345678901")
 

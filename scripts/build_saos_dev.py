@@ -24,7 +24,7 @@ DEV_PER_TYPE = 60
 def main():
     argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     seen = {json.loads(line)["saos_id"] for name in ("saos.jsonl", "saos_test.jsonl")
-            for line in (ROOT / "data" / "real" / name).read_text().splitlines()}
+            for line in (ROOT / "data" / "real" / name).read_text(encoding="utf-8").splitlines()}
     pool = {label: [] for label in TYPE_LABELS.values()}
     for path in sorted((ROOT / "data" / "prawo" / "saos-od-2025").glob("*.jsonl.gz")):
         for line in gzip.open(path, "rt", encoding="utf-8"):
@@ -42,12 +42,12 @@ def main():
         dev += rows[:DEV_PER_TYPE]
         train += rows[DEV_PER_TYPE:]
     q = {"rodzaj": questions("sad")["rodzaj"]}
-    with (ROOT / "data" / "bench" / "sad_real_dev.jsonl").open("w") as f:
+    with (ROOT / "data" / "bench" / "sad_real_dev.jsonl").open("w", encoding="utf-8") as f:
         for i, r in enumerate(dev):
             f.write(json.dumps({"id": f"sad_real_dev-{i:03d}", "domain": "sad_real", "source": r["source"],
                                 "state": r["state"], "questions": q, "expected": {"rodzaj": r["saos_type"]},
                                 "reviewed": True}, ensure_ascii=False) + "\n")
-    with (ROOT / "data" / "real" / "saos_2025_train.jsonl").open("w") as f:
+    with (ROOT / "data" / "real" / "saos_2025_train.jsonl").open("w", encoding="utf-8") as f:
         for r in train:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
     print(f"dev {len(dev)}; training pool: " + ", ".join(f"{k} {sum(r['saos_type'] == k for r in train)}" for k in pool))

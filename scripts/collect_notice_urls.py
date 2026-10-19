@@ -1,6 +1,6 @@
 """Collects addresses of real official notices from many offices (samorzad.gov.pl) → data/real/bip_urls_v2.txt.
 
-  python -m scripts.collect_notice_urls                  # then: .venv/bin/python -m scripts.fetch_notices data/real/bip_urls_v2.txt
+  python -m scripts.collect_notice_urls                  # then: .venv/bin/python -m scripts.fetch_notices data/real/bip_urls_v2.txt data/real/bip_v2.jsonl
 
 v1 had 30 notices from four municipalities (23 from one, ~18 templates) — the result depended on a few templates.
 Here: notice listings from many municipalities and districts, at most --per-office letters from one office.
@@ -49,7 +49,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--per-office", type=int, default=8)
     args = parser.parse_args()
-    known = set((ROOT / "data" / "real" / "bip_urls.txt").read_text().split())
+    known = set((ROOT / "data" / "real" / "bip_urls.txt").read_text(encoding="utf-8").split())
     result = []
     for listing in LISTINGS:
         slug = listing.split("/")[2]
@@ -67,7 +67,7 @@ def main():
         print(f"{slug}: {len(links)} letters, taking {min(len(links), args.per_office)}", flush=True)
         time.sleep(1)
     result = list(dict.fromkeys(result))
-    (ROOT / "data" / "real" / "bip_urls_v2.txt").write_text("\n".join(result) + "\n")
+    (ROOT / "data" / "real" / "bip_urls_v2.txt").write_text("\n".join(result) + "\n", encoding="utf-8")
     print(f"total {len(result)} addresses")
 
 

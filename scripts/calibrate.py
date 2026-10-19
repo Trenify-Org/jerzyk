@@ -34,7 +34,7 @@ def main():
     ap.add_argument("files", nargs="+")
     ap.add_argument("--model", required=True)
     args = ap.parse_args()
-    rows = [json.loads(l) for f in args.files for l in Path(f).read_text().splitlines() if l.strip()]
+    rows = [json.loads(l) for f in args.files for l in Path(f).read_text(encoding="utf-8").splitlines() if l.strip()]
     rows = [r for r in rows if r.get("ok", True)]
     data = defaultdict(list)  # type → [(probs, gold)]
     for r in rows:
@@ -46,7 +46,7 @@ def main():
         nll = lambda t: -sum(math.log(max(scale(p, t).get(g, 0), 1e-9)) for p, g in pairs) / len(pairs)
         result[typ] = min(GRID, key=nll)
         print(f"{typ}: n={len(pairs)}  T={result[typ]}  NLL {nll(1.0):.3f} → {nll(result[typ]):.3f}", flush=True)
-    calibration_file(args.model).write_text(json.dumps(result, indent=2))
+    calibration_file(args.model).write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(f"saved {calibration_file(args.model)}")
 
 

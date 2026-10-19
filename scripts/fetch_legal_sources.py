@@ -63,8 +63,8 @@ def eli_meta(_args):
     folder.mkdir(parents=True, exist_ok=True)
     for pub in ("DU", "MP"):
         path = folder / f"{pub}.jsonl"
-        done = {json.loads(line)["rok"] for line in path.read_text().splitlines()} if path.exists() else set()  # "rok": year, key already on disk
-        with path.open("a") as f:
+        done = {json.loads(line)["rok"] for line in path.read_text(encoding="utf-8").splitlines()} if path.exists() else set()  # "rok": year, key already on disk
+        with path.open("a", encoding="utf-8") as f:
             for year in get(f"{ELI}/acts/{pub}")["years"]:
                 if year in done:
                     continue
@@ -77,7 +77,7 @@ def eli_meta(_args):
 def eli_text(_args):
     folder = OUT / "eli" / "tekst"
     folder.mkdir(parents=True, exist_ok=True)
-    acts = [json.loads(line) for line in (OUT / "eli" / "DU.jsonl").read_text().splitlines()]
+    acts = [json.loads(line) for line in (OUT / "eli" / "DU.jsonl").read_text(encoding="utf-8").splitlines()]
     acts = [a for a in acts if a.get("status") == "obowiązujący"]  # API status value: "in force"
     for n, act in enumerate(acts, 1):
         name = act["address"]

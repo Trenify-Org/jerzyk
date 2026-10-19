@@ -69,7 +69,7 @@ def normalise_file(data):
 
 def load_result(name):
     """The `result` part of results/bench-<name>.json, with English keys."""
-    return normalise_file(json.loads((RESULTS / f"bench-{name}.json").read_text()))["result"]
+    return normalise_file(json.loads((RESULTS / f"bench-{name}.json").read_text(encoding="utf-8")))["result"]
 
 
 def fill_n(questions, counts):
@@ -85,7 +85,7 @@ def document_counts(folder):
     """{domain: number of documents} in *_test.jsonl files (as evaluate.py counts: without documents marked ok=false)."""
     counts = {}
     for f in Path(folder).glob("*_test.jsonl"):
-        for line in f.read_text().splitlines():
+        for line in f.read_text(encoding="utf-8").splitlines():
             if not line.strip():
                 continue
             row = json.loads(line)
@@ -141,7 +141,7 @@ def read_hardware():
     """Machine name written by evaluate_published.sh (the old file name is still read as a fallback)."""
     for path in (RESULTS / "hardware-published.txt", RESULTS / "sprzet-pub.txt"):
         if path.exists():
-            return path.read_text().strip()
+            return path.read_text(encoding="utf-8").strip()
     return None
 
 

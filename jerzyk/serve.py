@@ -61,7 +61,7 @@ class DemoRequest(BaseModel):
     delivery_date: Optional[str] = Field(default=None, max_length=10)  # YYYY-MM-DD
 
 
-def _predict(state, qs):
+def _predict(state: Any, qs: Dict[str, Any]) -> Dict[str, Any]:
     with _MODEL_LOCK:
         return calibrate(STATE["agent"].predict(state, qs), qs, STATE["calibration"])
 
@@ -77,12 +77,12 @@ def exposed(host: str) -> bool:
 
 
 @app.get("/health")
-def health():
+def health() -> Dict[str, str]:
     return {"status": "ok", "model": STATE["name"]}
 
 
 @app.post("/v1/systemone")
-def systemone(req: SystemOneRequest):
+def systemone(req: SystemOneRequest) -> Dict[str, Any]:
     """Same contract as TypeSafe Jev and llama.cpp: state + questions → answers + usage."""
     try:
         return _predict(req.state, req.questions)
@@ -92,8 +92,8 @@ def systemone(req: SystemOneRequest):
 
 
 @app.post("/api/demo")
-def demo(req: DemoRequest):
-    """Demo page backend: ready-made questions of a domain plus deadlines found by deadlines.py."""
+def demo(req: DemoRequest) -> Dict[str, Any]:
+    """Demo page backend: ready-made questions of a domain plus deadlines found by jerzyk.deadlines."""
     try:
         domain = resolve_domain(req.domain)
         delivery = dt.date.fromisoformat(req.delivery_date) if req.delivery_date else None
@@ -117,11 +117,11 @@ def demo(req: DemoRequest):
 
 
 @app.get("/")
-def index():
+def index() -> FileResponse:
     return FileResponse(ROOT / "demo" / "index.html")
 
 
-def main():
+def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default=DEFAULT_MODEL, help="Hugging Face id or local folder")
     ap.add_argument("--host", default="127.0.0.1")

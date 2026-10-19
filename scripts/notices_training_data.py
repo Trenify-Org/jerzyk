@@ -44,8 +44,8 @@ def get(url):
 
 
 def collect_urls():
-    test = {json.loads(line)["source"].split("/")[4] for line in (ROOT / "data/bench/adm_real_test.jsonl").read_text().splitlines()}
-    known = set((ROOT / "data/real/bip_urls.txt").read_text().split()) | set((ROOT / "data/real/bip_urls_v2.txt").read_text().split())
+    test = {json.loads(line)["source"].split("/")[4] for line in (ROOT / "data/bench/adm_real_test.jsonl").read_text(encoding="utf-8").splitlines()}
+    known = set((ROOT / "data/real/bip_urls.txt").read_text(encoding="utf-8").split()) | set((ROOT / "data/real/bip_urls_v2.txt").read_text(encoding="utf-8").split())
     result = []
     for start in START:
         slug = start.split("/")[2]
@@ -71,7 +71,7 @@ def collect_urls():
             time.sleep(0.7)
         result += [u for u in documents[:PER_OFFICE] if u not in result]
         print(f"{slug}: {len(documents[:PER_OFFICE])}", flush=True)
-    (ROOT / "data/real/bip_urls_train.txt").write_text("\n".join(result) + "\n")
+    (ROOT / "data/real/bip_urls_train.txt").write_text("\n".join(result) + "\n", encoding="utf-8")
     print(f"total {len(result)}")
 
 
@@ -107,13 +107,13 @@ def rule_labels(row):
 
 
 def make_labels():
-    rows = [json.loads(line) for line in (ROOT / "data/real/bip_train.jsonl").read_text().splitlines()]
+    rows = [json.loads(line) for line in (ROOT / "data/real/bip_train.jsonl").read_text(encoding="utf-8").splitlines()]
     out = []
     for row in rows:
         labels = rule_labels(row)
         if labels:
             out.append({"source": row["source"], "state": row["state"], "expected": labels})
-    (ROOT / "data/real/bip_train_etykiety.jsonl").write_text("".join(json.dumps(x, ensure_ascii=False) + "\n" for x in out))
+    (ROOT / "data/real/bip_train_etykiety.jsonl").write_text("".join(json.dumps(x, ensure_ascii=False) + "\n" for x in out), encoding="utf-8")
     print(len(rows), "letters →", len(out), "with labels;",
           "deadline", Counter(x["expected"].get("termin") for x in out), "urgency", Counter(x["expected"].get("pilnosc") for x in out),
           "type", Counter(x["expected"].get("rodzaj") for x in out))

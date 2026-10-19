@@ -7,6 +7,8 @@ A recipe is (document type, variant for the generator, deadline running, urgency
 that contains the variant, so the gold answer is known by construction; a person only checks that the document
 matches its recipe.
 """
+import copy
+from typing import Any, Dict
 
 DEADLINE_QUESTION = ("Czy pismo wymaga od adresata podjęcia czynności w określonym czasie albo otwiera mu taki termin "
                      "(zapłata, uzupełnienie, odpowiedź, środek zaskarżenia, stawiennictwo)?")
@@ -92,8 +94,14 @@ DEPARTMENTS = {  # customer e-mail routing
 }
 
 
-def questions(domain):
-    """Ready-made questions of a domain (sad, adm, ksieg, email) in the TypeSafe Jev systemone format."""
+def questions(domain: str) -> Dict[str, Dict[str, Any]]:
+    """Ready-made questions of a domain (sad, adm, ksieg, email) in the TypeSafe Jev systemone format.
+
+    Returns a new copy each time, so callers may change it without affecting later calls."""
+    return copy.deepcopy(_questions(domain))
+
+
+def _questions(domain):
     if domain == "email":
         return {
             "dzial": _choice("Do którego działu powinna trafić wiadomość?", DEPARTMENTS),

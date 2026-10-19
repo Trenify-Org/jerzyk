@@ -19,7 +19,7 @@ import calendar
 import re
 from dataclasses import dataclass
 from datetime import date as Date, timedelta
-from typing import List, Optional
+from typing import FrozenSet, List, Optional
 
 MONTHS = {
     "stycznia": 1, "lutego": 2, "marca": 3, "kwietnia": 4, "maja": 5, "czerwca": 6, "lipca": 7,
@@ -56,7 +56,7 @@ def easter(year: int) -> Date:
     return Date(year, month, (h + l - 7 * m + 114) % 31 + 1)
 
 
-def holidays(year: int) -> frozenset:
+def holidays(year: int) -> FrozenSet[Date]:
     """Polish public holidays (non-working days) in a year."""
     e = easter(year)
     days = {Date(year, 1, 1), Date(year, 1, 6), e, e + timedelta(days=1), Date(year, 5, 1), Date(year, 5, 3),

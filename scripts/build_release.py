@@ -67,6 +67,13 @@ def _copy_if_exists(src, dst):
         shutil.copy2(src, dst)
 
 
+def copy_required(src, dst):
+    """Copy a template the release cannot do without; stop with a clear message if it is missing."""
+    if not src.exists():
+        raise SystemExit(f"missing template {src} — restore it in wydanie/szablony/")
+    shutil.copy2(src, dst)
+
+
 def copy_code(root, github):
     """Code package, scripts (.py and .sh only), tests with fixtures, docs and pyproject.toml."""
     ignore_cache = shutil.ignore_patterns("__pycache__")
@@ -85,7 +92,8 @@ def copy_code(root, github):
 def copy_templates(templates, github):
     """README, NOTICE, .gitignore, CI and other GitHub files from the templates."""
     for f in GITHUB_TEMPLATES:
-        _copy_if_exists(templates / f"github-{f}", github / f)
+        copy = copy_required if f in ("README.md", "NOTICE") else _copy_if_exists
+        copy(templates / f"github-{f}", github / f)
     shutil.copytree(templates / "github-.github", github / ".github")
 
 
@@ -94,7 +102,7 @@ def build_model(weights, model_dir, templates):
     if model_dir.exists():
         shutil.rmtree(model_dir)
     shutil.copytree(weights, model_dir, ignore=shutil.ignore_patterns("checkpoint_latest"))
-    _copy_if_exists(templates / "hf-model-README.md", model_dir / "README.md")
+    copy_required(templates / "hf-model-README.md", model_dir / "README.md")
     _copy_if_exists(templates / "github-NOTICE", model_dir / "NOTICE")
 
 
@@ -106,8 +114,8 @@ def write_dataset(bench_dir, anonymised_dir, out_dir):
         src = (anonymised_dir if real else bench_dir) / f"{name}.jsonl"
         if not src.exists():
             raise SystemExit(f"missing anonymised file {name} — run the anonymisation first")
-        rows = [clean_row(json.loads(line), generated=not real) for line in src.read_text().splitlines() if line.strip()]
-        (out_dir / f"{name}.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows))
+        rows = [clean_row(json.loads(line), generated=not real) for line in src.read_text(encoding="utf-8").splitlines() if line.strip()]
+        (out_dir / f"{name}.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
         print(f"{name}: {len(rows)}")
 
 
@@ -135,7 +143,7 @@ def main():
 
     dataset = RELEASE / "hf-dataset"
     write_dataset(ROOT / "data" / "bench", RELEASE / "anonimizacja", dataset / "data")
-    _copy_if_exists(TEMPLATES / "hf-dataset-README.md", dataset / "README.md")
+    copy_required(TEMPLATES / "hf-dataset-README.md", dataset / "README.md")
     _copy_if_exists(TEMPLATES / "github-NOTICE", dataset / "NOTICE")
     for d in (github, model, dataset):
         shutil.copy2(TEMPLATES / "LICENSE", d / "LICENSE")
@@ -148,10 +156,10 @@ def main():
     tables = run_results_table(published)
     note = "" if published else ANONYMIZATION_NOTE
     index = results_table.model_index(*results_table.jerzyk_means(published)).rstrip("\n")
-    (model / "README.md").write_text((model / "README.md").read_text().replace("<!-- MODEL_INDEX -->", index))
+    (model / "README.md").write_text((model / "README.md").read_text(encoding="utf-8").replace("<!-- MODEL_INDEX -->", index))
     for readme in (github / "README.md", model / "README.md", dataset / "README.md"):
         if readme.exists():
-            readme.write_text(fill_markers(readme.read_text(), tables, note))
+            readme.write_text(fill_markers(readme.read_text(encoding="utf-8"), tables, note))
 
 
 if __name__ == "__main__":

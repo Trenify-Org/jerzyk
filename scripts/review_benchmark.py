@@ -17,11 +17,11 @@ BENCH = Path(__file__).resolve().parent.parent / "data" / "bench"
 
 
 def load(path):
-    return [json.loads(l) for l in path.read_text().splitlines() if l.strip()]
+    return [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines() if l.strip()]
 
 
 def save(path, rows):
-    path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows))
+    path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
 
 
 def main():

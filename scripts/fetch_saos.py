@@ -47,9 +47,9 @@ def main():
     seen = set()
     for name in [args.out] + args.skip:  # training and test sets stay disjoint
         if (REAL / name).exists():
-            seen |= {json.loads(line)["saos_id"] for line in (REAL / name).read_text().splitlines()}
+            seen |= {json.loads(line)["saos_id"] for line in (REAL / name).read_text(encoding="utf-8").splitlines()}
     per_query = args.count // len(QUERIES)
-    with out_path.open("a") as f:
+    with out_path.open("a", encoding="utf-8") as f:
         for kind, category in QUERIES:
             saved, page = 0, 0
             while saved < per_query:

@@ -226,11 +226,11 @@ def main():
     for domain in args.domains.split(","):
         for split, n in SPLITS.items():
             path = OUT / f"{domain}_{split}.jsonl"
-            done = {json.loads(l)["id"] for l in path.read_text().splitlines()} if path.exists() else set()
+            done = {json.loads(l)["id"] for l in path.read_text(encoding="utf-8").splitlines()} if path.exists() else set()
             base = {"test": 1_000_000, "dev": 2_000_000}[split] + 10_000 * list(SPLITS).index(split)
             jobs = [(domain, split, i, base + ["sad", "adm", "ksieg", "email"].index(domain) * 1000 + i) for i in range(n)
                     if f"{domain}-{split}-{i:03d}" not in done]
-            with path.open("a") as f, ThreadPoolExecutor(args.workers) as ex:
+            with path.open("a", encoding="utf-8") as f, ThreadPoolExecutor(args.workers) as ex:
                 for row in ex.map(lambda j: generate_one(args.url, j), jobs):
                     f.write(json.dumps(row, ensure_ascii=False) + "\n")
                     f.flush()

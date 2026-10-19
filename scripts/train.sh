@@ -2,6 +2,7 @@
 # Jerzyk v4: data v3 (SAOS 250, corrected e-mails) + 84 real official letters x2 (scripts/notices_training_data.py)
 # -> training -> calibration -> evaluation. Run from any directory; it changes to the repository root.
 cd "$(dirname "$0")/.." || exit 1
+mkdir -p logs results
 export USE_TF=0 PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.75 PYTORCH_MPS_LOW_WATERMARK_RATIO=0.6
 DEV="data/bench/sad_dev.jsonl data/bench/adm_dev.jsonl data/bench/ksieg_dev.jsonl data/bench/email_dev.jsonl data/bench/sad_real_dev.jsonl"
 REAL="data/bench/sad_real_test.jsonl data/bench/adm_real_test.jsonl"

@@ -25,11 +25,11 @@ SEED0 = 5_000_000  # disjoint from the test set seeds (1–2 million)
 
 
 def _rows(path):
-    return [json.loads(l) for l in path.read_text().splitlines() if l.strip()] if path.exists() else []
+    return [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines() if l.strip()] if path.exists() else []
 
 
 def _write(path, rows):
-    path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows))
+    path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
 
 
 def cmd_gen(args):
@@ -39,7 +39,7 @@ def cmd_gen(args):
         done = {r["id"] for r in _rows(path)}
         jobs = [(domain, "train", i, SEED0 + DOMAINS.index(domain) * 100_000 + i) for i in range(args.n)
                 if f"{domain}-train-{i:03d}" not in done]
-        with path.open("a") as f, ThreadPoolExecutor(args.workers) as ex:
+        with path.open("a", encoding="utf-8") as f, ThreadPoolExecutor(args.workers) as ex:
             for n, row in enumerate(ex.map(lambda j: generate_one(args.url, j), jobs), 1):
                 f.write(json.dumps(row, ensure_ascii=False) + "\n")
                 f.flush()

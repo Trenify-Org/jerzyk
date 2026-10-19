@@ -100,7 +100,7 @@ USE_TF=0 .venv/bin/laya-train --data data/train_v4/train.jsonl \
 
 # 6. Evaluation on the benchmark
 USE_TF=0 .venv/bin/python -m scripts.evaluate --kind laya --url models/jerzyk-v4 \
-  --calibration models/jerzyk-v4.kalibracja.json --name jerzyk-v4 data/bench/*_test.jsonl
+  --calibration models/jerzyk-v4.calibration.json --name jerzyk-v4 data/bench/*_test.jsonl
 python3 -m scripts.evaluate --kind llm --url http://127.0.0.1:9934 --name bielik data/bench/*_test.jsonl
 ```
 

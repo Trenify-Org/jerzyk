@@ -74,7 +74,7 @@ def main():
     args = ap.parse_args()
     paths = sorted({p for w in args.files.split(",") for p in BENCH.glob(w) if "_real_" not in p.name})
     for path in paths:
-        rows = [json.loads(l) for l in path.read_text().splitlines() if l.strip()]
+        rows = [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines() if l.strip()]
         if all("flags" in r for r in rows) and not args.recheck:
             continue  # file already checked (resuming after an interruption)
         with ThreadPoolExecutor(args.workers) as ex:
@@ -87,7 +87,7 @@ def main():
             if not r.pop("consistent"):
                 qid = "dzial" if r["domain"] == "email" else "rodzaj"
                 r["flags"].append(f"Bielik reads {qid} as {r['bielik_reading'][qid]} ({r['bielik_reading']['p']})")
-        path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows))
+        path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
         n = sum(bool(r["flags"]) for r in rows)
         print(f"{path.name}: {n}/{len(rows)} flagged", flush=True)
 

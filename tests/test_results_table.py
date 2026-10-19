@@ -91,9 +91,9 @@ class TestDocumentCounts(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             folder = Path(d)
             (folder / "sad_test.jsonl").write_text(
-                '{"id": "a", "domain": "sad"}\n{"id": "b", "domain": "sad", "ok": false}\n\n')
-            (folder / "adm_real_test.jsonl").write_text('{"id": "c", "domain": "adm_real", "ok": true}\n')
-            (folder / "dev.jsonl").write_text('{"id": "d", "domain": "adm"}\n')  # not a *_test file
+                '{"id": "a", "domain": "sad"}\n{"id": "b", "domain": "sad", "ok": false}\n\n', encoding="utf-8")
+            (folder / "adm_real_test.jsonl").write_text('{"id": "c", "domain": "adm_real", "ok": true}\n', encoding="utf-8")
+            (folder / "dev.jsonl").write_text('{"id": "d", "domain": "adm"}\n', encoding="utf-8")  # not a *_test file
             self.assertEqual(document_counts(folder), {"sad": 1, "adm_real": 1})
 
 
@@ -101,9 +101,9 @@ class TestReadHardware(unittest.TestCase):
     def test_new_file_wins_and_old_is_fallback(self):
         with tempfile.TemporaryDirectory() as d, mock.patch.object(results_table, "RESULTS", Path(d)):
             self.assertIsNone(read_hardware())
-            (Path(d) / "sprzet-pub.txt").write_text("Old Mac\n")
+            (Path(d) / "sprzet-pub.txt").write_text("Old Mac\n", encoding="utf-8")
             self.assertEqual(read_hardware(), "Old Mac")
-            (Path(d) / "hardware-published.txt").write_text("NVIDIA GPU\n")
+            (Path(d) / "hardware-published.txt").write_text("NVIDIA GPU\n", encoding="utf-8")
             self.assertEqual(read_hardware(), "NVIDIA GPU")
 
 

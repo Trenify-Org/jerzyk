@@ -18,7 +18,7 @@ from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 from jerzyk.questions import questions
 
-# English domain name → code used by tasks.py, jerzyk-bench and the model
+# English domain name → code used by jerzyk.questions, jerzyk-bench and the model
 DOMAINS = {"court": "sad", "admin": "adm", "accounting": "ksieg", "email": "email"}
 CALIBRATION_FILES = ("calibration.json", "kalibracja.json")  # kalibracja.json: name used before 1.0
 DEFAULT_MODEL = "trenify/jerzyk-1.0"
@@ -53,12 +53,12 @@ def load_calibration(model: Union[str, Path]) -> Dict[str, float]:
     for name in CALIBRATION_FILES:
         f = Path(model) / name
         if f.exists():
-            return json.loads(f.read_text())
+            return json.loads(f.read_text(encoding="utf-8"))
     return {}
 
 
 def calibrate(res: Dict[str, Any], qs: Dict[str, Any], temperatures: Dict[str, float]) -> Dict[str, Any]:
-    """Temperature scaling (calibrate.py): p_i ∝ p_i^(1/T), one T per question type. Returns a new answer."""
+    """Temperature scaling (scripts/calibrate.py): p_i ∝ p_i^(1/T), one T per question type. Returns a new answer."""
     res = copy.deepcopy(res)
     for qid, a in res.get("answers", {}).items():
         t = (temperatures or {}).get(a.get("type") or qs.get(qid, {}).get("type"), 1.0)

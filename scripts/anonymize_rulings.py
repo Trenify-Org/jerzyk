@@ -92,14 +92,14 @@ def main():
             meta[j["id"]] = ([x["name"] for x in j.get("judges", [])], j.get("courtReporters", []))
     OUT.mkdir(parents=True, exist_ok=True)
     for name in FILES:
-        rows = [json.loads(line) for line in (ROOT / "data/bench" / f"{name}.jsonl").read_text().splitlines() if line.strip()]
+        rows = [json.loads(line) for line in (ROOT / "data/bench" / f"{name}.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
         missing = 0
         for r in rows:
             sid = int(r["source"].rstrip("/").split("/")[-1])
             judges, clerks = meta.get(sid, ([], []))
             missing += sid not in meta
             r["state"] = anonymize(r["state"], judges, clerks)
-        (OUT / f"{name}.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows))
+        (OUT / f"{name}.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
         print(f"{name}: {len(rows)} rulings, without metadata: {missing}")
 
 

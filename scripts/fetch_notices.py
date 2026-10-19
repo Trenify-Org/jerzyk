@@ -50,16 +50,15 @@ def extract_text(payload):
 
 
 def main():
-    global OUT
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("urls", type=Path, help="text file with one notice URL per line")
     ap.add_argument("out", type=Path, nargs="?", default=OUT, help=f"output JSONL (default: {OUT})")
     args = ap.parse_args()
-    OUT = args.out
-    urls = [u.strip() for u in args.urls.read_text().splitlines() if u.strip() and not u.startswith("#")]
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    done = {json.loads(line)["source"] for line in OUT.read_text().splitlines()} if OUT.exists() else set()
-    with OUT.open("a") as f:
+    out = args.out
+    urls = [u.strip() for u in args.urls.read_text(encoding="utf-8").splitlines() if u.strip() and not u.startswith("#")]
+    out.parent.mkdir(parents=True, exist_ok=True)
+    done = {json.loads(line)["source"] for line in out.read_text(encoding="utf-8").splitlines()} if out.exists() else set()
+    with out.open("a", encoding="utf-8") as f:
         for url in urls:
             if url in done:
                 continue
