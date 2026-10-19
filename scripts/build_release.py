@@ -29,7 +29,7 @@ CODE_DOCS = ("SPEC.md", "TRAINING.md")
 ANONYMIZATION_NOTE = (
     "> **Note.** These results were measured on the benchmark text before anonymisation of the real documents "
     "(names of judges, officials and private persons replaced with placeholders such as `[SĘDZIA]` and `[OSOBA]`). "
-    "On the published, anonymised text Jerzyk 1.0 scores 86.3% instead of 86.6% on real documents. "
+    "On the published, anonymised text Jerzyk 1.0 scores 85.5% instead of 85.8% on real documents. "
     "The other models will be re-measured on the published text in a later update.")
 # fields of a published row, in this order
 FIELDS = ["id", "domain", "split", "state", "questions", "expected", "source", "author", "labels", "note"]

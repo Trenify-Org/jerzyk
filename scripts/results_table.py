@@ -18,11 +18,12 @@ from statistics import mean
 ROOT = Path(__file__).resolve().parent.parent
 RESULTS = ROOT / "results"
 DATA_BENCH = ROOT / "data" / "bench"
+# real documents: stored predictions re-scored after the label check of 2026-10-19 (scripts/rescore_results.py)
 MODELS = {  # name in the table: (full test, e-mails v3 or None, real documents)
-    "**Jerzyk 1.0** (322M)": ("jerzyk-v4-kal", None, "jerzyk-v4-kal-real2"),
-    "basal-2.0-mini (1.5B)": ("basal-2.0-mini", "basal-2.0-mini-email3", "basal-2.0-mini-real2"),
-    "Qwen3 8B": ("qwen3-8b", "qwen3-8b-email3", "qwen3-8b-real2"),
-    "Bielik 11B v3": ("bielik-11b", "bielik-11b-email3", "bielik-11b-real2"),
+    "**Jerzyk 1.0** (322M)": ("jerzyk-v4-kal", None, "jerzyk-v4-kal-real2-relabel"),
+    "basal-2.0-mini (1.5B)": ("basal-2.0-mini", "basal-2.0-mini-email3", "basal-2.0-mini-real2-relabel"),
+    "Qwen3 8B": ("qwen3-8b", "qwen3-8b-email3", "qwen3-8b-real2-relabel"),
+    "Bielik 11B v3": ("bielik-11b", "bielik-11b-email3", "bielik-11b-real2-relabel"),
 }
 # the same models measured on the published benchmark (scripts/evaluate_published.sh); e-mails are already v3
 MODELS_PUB = {name: (f"{n}-pub", None, f"{n}-pub-real") for name, n in (

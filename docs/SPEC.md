@@ -128,3 +128,11 @@ The train set is generated with different topic templates from the test set, so 
 - Real test of rulings: 31 of 120 letters are fragments of reasoning without a heading (WYROK/POSTANOWIENIE, "JUDGMENT"/"DECISION", in the first 400 characters) — the document type cannot be decided from the text (Bielik 6.5%). Moved to `sad_real_fragmenty_test.jsonl` (reported separately, outside the average); the main `sad_real_test.jsonl` = 89 letters with a heading. An objective rule, the same for all models; the original is in `data/odrzucone/real-test-v1/`.
 - Real official test v2: 56 letters from 9+ offices (`scripts/collect_notice_urls.py` + `scripts/fetch_notices.py`, template de-duplication), labels: Claude, according to SPEC (for the user's review). Conventions used for the labels: "delivery is deemed made after 14 days" (doręczenie uważa się za dokonane po 14 dniach) is not a deadline; urgency is counted from the date of the letter (the length of the deadline), not from today; remarks "until a decision is issued" (do czasu wydania decyzji) with no date = no deadline. The old set (30, ~18 templates) is in `data/odrzucone/real-test-v1/`.
 - Decisions of the user (2026-10-18): urgency is counted from the date of the letter (not from today — the test result does not change over time); a right of objection with a deadline in hunting-notice announcements = `termin` YES.
+
+
+## Decisions (2026-10-19)
+- Label check of `adm_real_test` (56 notices): two independent blind re-labellings and a rule check, disagreements adjudicated against this SPEC; 11 notices corrected (`label_changes` in each row). Results on real documents were re-scored from the stored predictions (`scripts/rescore_results.py`), the models were not run again.
+- A right to submit remarks or inspect the files with no deadline stated = an action without a deadline, `pilnosc` 1 (not 0).
+- A notice of an issued decision with no deadline stated stays `pilnosc` 0.
+- A text cut off before the appeal clause is labelled from what is visible.
+- A procedural notice inside a proceeding (e.g. environmental impact assessment) = `zawiadomienie`; a general planning announcement = `inne`; an attachment = `inne`.
