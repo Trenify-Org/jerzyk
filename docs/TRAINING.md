@@ -149,4 +149,4 @@ Tips from earlier versions:
 1. Rent a server with an NVIDIA card (24–80 GB), preferably from an EU provider (e.g. Scaleway, OVH, Hetzner).
 2. Copy the project folder **without** `models/*.gguf`, `logs/`, `.venv/` and `data/bench/` (the test set stays local, unless you want to evaluate there too).
 3. Install the dependencies and vLLM (sections 2–3), then run steps 3–6 with `--device cuda` and a higher `--workers`.
-4. Download `models/jerzyk-vN` and `data/train_v4/`, then **switch off the server** — you pay for the time it runs.
+4. Download `models/jerzyk-vN` and `data/train_v4/` from the server (the training set is built by these scripts; it is not published), then **switch off the server** — you pay for the time it runs.
