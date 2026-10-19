@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use Jerzyk or jerzyk-bench, please cite it as below."
+title: "Jerzyk: a small Polish decision model for official correspondence, and jerzyk-bench"
+type: software
+authors:
+  - name: "Fundacja Trenify"
+version: "1.0.0"
+license: Apache-2.0
+repository-code: "https://github.com/Trenify-Org/jerzyk"
+url: "https://huggingface.co/trenify/jerzyk-1.0"
+keywords:
+  - polish
+  - decision model
+  - document classification
+  - benchmark
+  - legal

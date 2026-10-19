@@ -1,7 +1,7 @@
 """Jerzyk in Python: the model, its calibration and ready-made questions for four domains.
 
   from jerzyk import Jerzyk
-  j = Jerzyk("models/jerzyk-1.0")
+  j = Jerzyk("trenify/jerzyk-1.0")          # downloads from Hugging Face; or a local folder
   j.ask("Sąd Rejonowy … w terminie 7 dni od doręczenia …", domain="court")
   # {'rodzaj': ('wezwanie_sadu', 0.97), 'termin': (True, 0.95), 'pilnosc': (3, 0.91)}
 
@@ -12,14 +12,31 @@ Question names and answer options stay in Polish: the model was trained on them 
 """
 import copy
 import json
+import re
 from pathlib import Path
-from typing import Any, Dict, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 from tasks import questions
 
 # English domain name → code used by tasks.py, jerzyk-bench and the model
 DOMAINS = {"court": "sad", "admin": "adm", "accounting": "ksieg", "email": "email"}
 CALIBRATION_FILES = ("calibration.json", "kalibracja.json")  # kalibracja.json: name used before 1.0
+DEFAULT_MODEL = "trenify/jerzyk-1.0"
+_HUB_ID = re.compile(r"[A-Za-z0-9][\w.-]*/[\w.-]+")
+
+
+def _hub_download(repo_id: str) -> str:
+    from huggingface_hub import snapshot_download
+    return snapshot_download(repo_id)
+
+
+def resolve_model(model: Union[str, Path], download: Optional[Callable[[str], str]] = None) -> Path:
+    """Local model folder, or a Hugging Face id ("trenify/jerzyk-1.0") downloaded to the local cache."""
+    if Path(model).exists():
+        return Path(model)
+    if isinstance(model, str) and _HUB_ID.fullmatch(model):
+        return Path((download or _hub_download)(model))
+    raise FileNotFoundError(f"model not found: {model} (a local folder or a Hugging Face id such as {DEFAULT_MODEL})")
 
 
 def resolve_domain(domain: str) -> str:
@@ -63,12 +80,13 @@ def calibrate(res: Dict[str, Any], qs: Dict[str, Any], temperatures: Dict[str, f
 
 
 class Jerzyk:
-    """A local Jerzyk model. `model` is a folder with the weights and calibration.json."""
+    """Jerzyk running locally. `model` is a Hugging Face id or a folder with the weights and calibration.json."""
 
-    def __init__(self, model: Union[str, Path] = "models/jerzyk-1.0"):
+    def __init__(self, model: Union[str, Path] = DEFAULT_MODEL):
         import laya
-        self.agent = laya.load(str(model))
-        self.temperatures = load_calibration(model)
+        path = resolve_model(model)
+        self.agent = laya.load(str(path))
+        self.temperatures = load_calibration(path)
 
     def predict(self, state: str, qs: Dict[str, Any]) -> Dict[str, Any]:
         """Full calibrated answer in the /v1/systemone format (TypeSafe Jev) for your own questions."""

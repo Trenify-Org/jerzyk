@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from jerzyk import DOMAINS, Jerzyk, calibrate, load_calibration, resolve_domain
+from jerzyk import DOMAINS, Jerzyk, calibrate, load_calibration, resolve_domain, resolve_model
 from tasks import questions
 
 
@@ -71,6 +71,23 @@ class TestLoadCalibration(unittest.TestCase):
     def test_missing_file_means_no_calibration(self):
         with tempfile.TemporaryDirectory() as d:
             self.assertEqual(load_calibration(d), {})
+
+
+class TestResolveModel(unittest.TestCase):
+    def test_local_folder_is_used_as_is(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(resolve_model(d, download=self.fail), Path(d))
+
+    def test_hub_id_is_downloaded(self):
+        calls = []
+        out = resolve_model("trenify/jerzyk-1.0", download=lambda repo_id: calls.append(repo_id) or "/cache/x")
+        self.assertEqual((out, calls), (Path("/cache/x"), ["trenify/jerzyk-1.0"]))
+
+    def test_missing_local_path_is_an_error(self):
+        with self.assertRaises(FileNotFoundError):
+            resolve_model("models/does-not-exist/x", download=self.fail)
+        with self.assertRaises(FileNotFoundError):
+            resolve_model("./jerzyk-1.0", download=self.fail)
 
 
 class TestDomains(unittest.TestCase):

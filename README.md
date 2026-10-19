@@ -51,16 +51,20 @@ Jerzyk is a **decision model** (a classifier with typed questions):
 
 | Question | **Jerzyk 1.0** (322M) | basal-2.0-mini (1.5B) | Qwen3 8B | Bielik 11B v3 |
 |---|---|---|---|---|
-| Admin. notices (real): pilnosc | 69.6 | 42.9 | 37.5 | 16.1 |
-| Admin. notices (real): rodzaj | 82.1 | 75.0 | 82.1 | 85.7 |
-| Admin. notices (real): termin | 71.4 | 75.0 | 60.7 | 80.4 |
-| Court rulings (real): rodzaj | 98.9 | 93.3 | 100.0 | 100.0 |
+| Admin. notices (real): pilnosc | 69.6 (57–80) | 42.9 (31–56) | 37.5 (26–51) | 16.1 (9–28) |
+| Admin. notices (real): rodzaj | 82.1 (70–90) | 75.0 (62–84) | 82.1 (70–90) | 85.7 (74–93) |
+| Admin. notices (real): termin | 71.4 (58–82) | 75.0 (62–84) | 60.7 (48–72) | 80.4 (68–89) |
+| Court rulings (real): rodzaj | 98.9 (94–100) | 93.3 (86–97) | 100.0 (96–100) | 100.0 (96–100) |
 | **Mean over domains** | **86.6** | **78.8** | **80.0** | **80.4** |
 
 | | **Jerzyk 1.0** (322M) | basal-2.0-mini (1.5B) | Qwen3 8B | Bielik 11B v3 |
 |---|---|---|---|---|
 | ECE, real documents (lower = better) | 0.101 | 0.116 | 0.228 | 0.181 |
 | Median latency per document (all models on the same computer) | 0.05 s | 0.28 s | 1.75 s | 3.01 s |
+
+Models compared: [Jerzyk 1.0](https://huggingface.co/trenify/jerzyk-1.0) (calibrated); [basal-2.0-mini](https://huggingface.co/Remek/basal-2.0-mini-MLX-8bit) (MLX 8-bit, native `/v1/systemone`); [Qwen3 8B](https://huggingface.co/Qwen/Qwen3-8B-GGUF) and [Bielik 11B v3.0 Instruct](https://huggingface.co/speakleash/Bielik-11B-v3.0-Instruct-GGUF) (GGUF Q4_K_M in llama.cpp, zero-shot, answer chosen from option log-probabilities).
+
+> **Note.** These results were measured on the benchmark text before anonymisation of the real documents (names of judges, officials and private persons replaced with placeholders such as `[SĘDZIA]` and `[OSOBA]`). On the published, anonymised text Jerzyk 1.0 scores 86.3% instead of 86.6% on real documents. The other models will be re-measured on the published text in a later update.
 
 How to read the table:
 
@@ -78,8 +82,7 @@ How to read the table:
 ```bash
 uv venv --python 3.11 .venv
 uv pip install --python .venv/bin/python -r requirements.txt
-# model: https://huggingface.co/trenify/jerzyk-1.0  → models/jerzyk-1.0
-huggingface-cli download trenify/jerzyk-1.0 --local-dir models/jerzyk-1.0
+# the model (trenify/jerzyk-1.0, 650 MB) downloads from Hugging Face on first use
 ```
 
 **Python**
@@ -87,7 +90,7 @@ huggingface-cli download trenify/jerzyk-1.0 --local-dir models/jerzyk-1.0
 ```python
 from jerzyk import Jerzyk
 
-j = Jerzyk("models/jerzyk-1.0")
+j = Jerzyk("trenify/jerzyk-1.0")   # or a local folder
 j.ask("Dzień dobry, od rana nie mogę zalogować się do aplikacji i opłacić faktury…", domain="email")
 # {'dzial': ('platnosci_i_faktury', 0.998), 'rezygnacja': (False, 0.943),
 #  'zdenerwowany': (False, 0.675), 'pilnosc': (2, 0.623)}
@@ -98,13 +101,17 @@ Domains with ready-made questions: `court`, `admin` (administrative / building p
 **Server + demo page**
 
 ```bash
-USE_TF=0 .venv/bin/python jerzyk_serve.py --model models/jerzyk-1.0 --port 8080
+USE_TF=0 .venv/bin/python jerzyk_serve.py --port 8080   # --model trenify/jerzyk-1.0 or a local folder
 open http://127.0.0.1:8080          # demo page
 curl -s localhost:8080/v1/systemone -H 'content-type: application/json' -d '{
   "state": "Faktura VAT nr FV/12/2026 … termin płatności 14 dni",
   "questions": {"rodzaj": {"type": "choice", "instructions": "Jaki to dokument?",
                  "criteria": {"faktura": "faktura VAT", "umowa": "umowa", "inne": "inne"}}}}'
 ```
+
+The server has no authentication and listens only on `127.0.0.1`. Do not expose it with `--host 0.0.0.0` unless it runs behind your own access control (see [`SECURITY.md`](SECURITY.md)).
+
+**Tests** (no model needed): `python -m unittest discover -p "test_*.py"`
 
 **Deadlines**
 

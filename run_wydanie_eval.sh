@@ -3,7 +3,7 @@
 # Uruchamiać na komputerze z co najmniej 16 GB pamięci: Bielik 11B potrzebuje ok. 8 GB pamięci.
 #
 #   python3 wydanie.py                         # najpierw zbiór w wersji do publikacji (wydanie/hf-dataset/data)
-#   caffeinate -ims ./run_wydanie_eval.sh      # na Macu; na Linuksie bez caffeinate
+#   caffeinate -ims ./run_wydanie_eval.sh      # na Macu; na Linuksie / WSL: ./run_wydanie_eval.sh
 #   python3 tabela.py --pub                    # tabele z wyników *-pub
 #
 # Potrzebne: .venv (laya), llama-server, pliki GGUF (TRENING.md), opcjonalnie .venv-basal (run_basal.sh).
@@ -20,6 +20,10 @@ QWEN_GGUF=${QWEN_GGUF:-models/Qwen3-8B-Q4_K_M.gguf}
 mkdir -p logs results
 PY=python3; [ -x .venv/bin/python ] && PY=.venv/bin/python   # laya jest tylko w .venv
 [ -f "$D/sad_test.jsonl" ] || { echo "brak $D — najpierw python3 wydanie.py"; exit 1; }
+# nazwa komputera do tabeli czasów (tabela.py --pub); można nadpisać: SPRZET="…" ./run_wydanie_eval.sh
+SPRZET=${SPRZET:-$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1)}
+SPRZET=${SPRZET:-$(sysctl -n machdep.cpu.brand_string 2>/dev/null)}
+echo "$SPRZET" > results/sprzet-pub.txt
 
 # ocena jednego modelu na trzech zestawach: NAZWA RODZAJ URL [dodatkowe argumenty evaluate.py]
 ocen() {
@@ -35,6 +39,7 @@ ocen() {
 
 # serwer llama.cpp dla modelu GGUF na czas pomiaru: NAZWA PLIK_GGUF
 llm() {
+  [ -f "results/bench-$1-pub-frag.json" ] && { echo "$1: wyniki już są (pomijam)"; return; }
   [ -f "$2" ] || { echo "$1: brak $2 (pomijam)"; return; }
   llama-server -m "$2" --port 9940 -c 16384 -np 1 -ngl 99 > "logs/serve-$1-pub.log" 2>&1 &
   pid=$!
@@ -48,7 +53,9 @@ llm() {
 ocen jerzyk-1.0 laya models/jerzyk-1.0 --kalibracja models/jerzyk-1.0/calibration.json
 llm qwen3-8b "$QWEN_GGUF"
 llm bielik-11b "$BIELIK_GGUF"
-if [ -x .venv-basal/bin/basal-serve ]; then
+if [ -f results/bench-basal-2.0-mini-pub-frag.json ]; then
+  echo "basal-2.0-mini: wyniki już są (pomijam)"
+elif [ -x .venv-basal/bin/basal-serve ]; then
   .venv-basal/bin/basal-serve --model Remek/basal-2.0-mini-MLX-8bit --mode mlx --port 9950 > logs/serve-basal-pub.log 2>&1 &
   pid=$!
   until curl -s localhost:9950/health >/dev/null 2>&1; do sleep 5; kill -0 $pid 2>/dev/null || break; done

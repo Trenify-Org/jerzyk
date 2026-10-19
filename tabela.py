@@ -43,6 +43,26 @@ def komorka(m, przedzial=False):
     return s
 
 
+def uzupelnij_n(pytania, liczby):
+    """Starsze wyniki nie mają `n`: każde pismo dostaje każde pytanie swojej dziedziny, więc n = liczba pism."""
+    out = {}
+    for q, m in pytania.items():
+        d = q.split(".")[0]
+        out[q] = m if "n" in m or d not in liczby else {**m, "n": liczby[d]}
+    return out
+
+
+def liczba_pism(folder):
+    """{domena: liczba pism} w plikach *_test.jsonl (tak jak liczy evaluate.py: bez pism oznaczonych ok=false)."""
+    liczby = {}
+    for f in Path(folder).glob("*_test.jsonl"):
+        for l in f.read_text().splitlines():
+            if l.strip() and json.loads(l).get("ok", True):
+                d = json.loads(l)["domena"]
+                liczby[d] = liczby.get(d, 0) + 1
+    return liczby
+
+
 def wczytaj(n):
     return json.loads((R / f"bench-{n}.json").read_text())["wynik"]
 
@@ -57,6 +77,24 @@ def pytania(pelny, email3):
 def srednia(p):
     dom = sorted({k.split(".")[0] for k in p})
     return mean(mean(v["trafnosc"] for k, v in p.items() if k.startswith(d + ".")) for d in dom)
+
+
+def model_index(gen, real):
+    """Blok `model-index` do karty modelu na Hugging Face: średnia trafność Jerzyka na obu częściach testu."""
+    wpisy = ((gen, "generated test set", "Mean accuracy over domains, generated documents"),
+             (real, "real documents", "Mean accuracy over domains, real documents"))
+    y = "model-index:\n- name: jerzyk-1.0\n  results:\n"
+    for wartosc, czesc, opis in wpisy:
+        y += ("  - task:\n      type: text-classification\n      name: Decision questions on Polish correspondence\n"
+              f"    dataset:\n      name: jerzyk-bench ({czesc})\n      type: trenify/jerzyk-bench\n      split: test\n"
+              f"    metrics:\n    - type: accuracy\n      value: {wartosc * 100:.1f}\n      name: {opis}\n")
+    return y
+
+
+def jerzyk_srednie(pub=False):
+    """(średnia na wygenerowanych, średnia na prawdziwych) dla Jerzyka — te same liczby co w tabelach."""
+    pelny, email3, real = (MODELE_PUB if pub else MODELE)["**Jerzyk 1.0** (322M)"]
+    return srednia(pytania(pelny, email3)), srednia(wczytaj(real)["pytania"])
 
 
 def tabela(dane, tytul, przedzial=False):
@@ -74,17 +112,26 @@ def tabela(dane, tytul, przedzial=False):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pub", action="store_true", help="wyniki na opublikowanej wersji zbioru (run_wydanie_eval.sh)")
-    ap.add_argument("--sprzet", default="all models on the same computer", help="komputer, na którym mierzono czas")
+    ap.add_argument("--sprzet", help="komputer, na którym mierzono czas (domyślnie z results/sprzet-pub.txt albo: wszystkie modele na tym samym komputerze)")
     args = ap.parse_args()
+    plik = R / "sprzet-pub.txt"
+    args.sprzet = args.sprzet or (args.pub and plik.exists() and plik.read_text().strip()) or "all models on the same computer"
     modele = MODELE_PUB if args.pub else MODELE
     gen = {m: pytania(p, e) for m, (p, e, _) in modele.items()}
-    real = {m: wczytaj(r)["pytania"] for m, (_, _, r) in modele.items()}
+    liczby = liczba_pism(Path(__file__).parent / "data" / "bench")
+    real = {m: uzupelnij_n(wczytaj(r)["pytania"], liczby) for m, (_, _, r) in modele.items()}
     tabela(gen, "Generated test set (480 documents)")
     tabela(real, "Real documents (89 court rulings + 56 administrative notices)", przedzial=True)
     print("\n| | " + " | ".join(modele) + " |\n|---|" + "---|" * len(modele))
     print("| ECE, real documents (lower = better) | " + " | ".join(f"{wczytaj(r)['ece']:.3f}" for _, _, r in modele.values()) + " |")
     print(f"| Median latency per document ({args.sprzet}) | " +
           " | ".join(f"{wczytaj(r)['ms_mediana'] / 1000:.2f} s" for _, _, r in modele.values()) + " |")
+    print("\nModels compared: "
+          "[Jerzyk 1.0](https://huggingface.co/trenify/jerzyk-1.0) (calibrated); "
+          "[basal-2.0-mini](https://huggingface.co/Remek/basal-2.0-mini-MLX-8bit) (MLX 8-bit, native `/v1/systemone`); "
+          "[Qwen3 8B](https://huggingface.co/Qwen/Qwen3-8B-GGUF) and "
+          "[Bielik 11B v3.0 Instruct](https://huggingface.co/speakleash/Bielik-11B-v3.0-Instruct-GGUF) "
+          "(GGUF Q4_K_M in llama.cpp, zero-shot, answer chosen from option log-probabilities).")
 
 
 if __name__ == "__main__":
