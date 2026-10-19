@@ -8,6 +8,8 @@ SAOS anonymises the parties, but publishes the court panel. At the project autho
 - as a precaution, first and last name after the words „Sędzia/SSR/SSO/SSA/Ławnik/Protokolant/Prokurator/referendarz”,
 - a first name from a list of common first names (also inflected: „Urszuli”, „Zdzisława”) followed by a surname.
 The metadata comes from the local SAOS dump (data/prawo/saos-od-*, see scripts/fetch_legal_sources.py).
+Leaks the rules miss, found by reading every real document, are fixed by hand in MANUAL_FIXES; these are also
+applied to the already anonymised notices (adm_real_test.jsonl).
 """
 import argparse
 import glob
@@ -19,6 +21,22 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "wydanie" / "anonimizacja"
 FILES = ["sad_real_test", "sad_real_fragmenty_test", "sad_real_dev"]
+NOTICES = "adm_real_test"
+# found by two independent read-throughs of all 296 real documents (2026-10-19); names of authors of cited legal
+# commentaries are published literature and stay
+MANUAL_FIXES = {
+    "sad_real-000": [(" (Szok)", "")],                                     # former surname of a participant
+    "sad_real-006": [("Sławomir [SĘDZIA]", "[SĘDZIA]")],                   # judge's first name in the signature
+    "sad_real-027": [("ProtokolantBarbara [OSOBA]", "Protokolant [PROTOKOLANT]")],
+    "sad_real_dev-001": [("EDUM/25/039230337", "[DANE]")],                 # ZUS decision number of the insured
+    "sad_real_dev-027": [("[PROTOKOLANT] Fabiszewska", "[PROTOKOLANT]")],
+    "sad_real_dev-047": [("Amina A. A.", "A. A.")],                        # first name of a plaintiff
+    "sad_real_dev-073": [("Daniny N. U. (2)", "N. U. (2)")],               # first name of a participant
+    "sad_real_dev-080": [("[SĘDZIA] Rizler", "[OSOBA]")],                  # court bailiff
+    "adm_real-048": [("41 373 13 48", "[DANE]")],                          # direct line of the official who drafted it
+    "adm_real-049": [("41 373 13 48", "[DANE]")],
+    "adm_real-051": [("41 373 13 48", "[DANE]")],
+}
 CAP_WORD = r"(?!Protokolant|Przewodnicz|Sędzi|Ławni|Prokurator)[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+"
 ROLE = re.compile(rf"((?:[Ss]ędzi(?:a|owie|ego|emu|ą|ów|ami)?|SSR|SSO|SSA|SR|SO|SA|[Łł]awni(?:k|cy)|[Pp]rotokolant(?:ka)?|[Pp]rokurator|"
                   rf"[Rr]eferendarz(?:\s+sądowy)?|[Ss]ekretarz\s+sądowy|[Aa]systent\s+sędziego|[Aa]sesor\s+sądowy|stażysta)"
@@ -83,6 +101,22 @@ def anonymize(text, judges=(), clerks=()):
     return FULL_NAME.sub("[SĘDZIA]", t[:1200]) + FULL_NAME.sub("[OSOBA]", t[1200:])
 
 
+def apply_manual_fixes(row):
+    """A copy of the row with the hand-made fixes for its document applied."""
+    state = row["state"]
+    for old, new in MANUAL_FIXES.get(row["id"], ()):
+        state = state.replace(old, new)
+    return {**row, "state": state}
+
+
+def write_rows(path, rows):
+    path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
+
+
+def read_rows(path):
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
 def main():
     argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     meta = {}
@@ -92,15 +126,17 @@ def main():
             meta[j["id"]] = ([x["name"] for x in j.get("judges", [])], j.get("courtReporters", []))
     OUT.mkdir(parents=True, exist_ok=True)
     for name in FILES:
-        rows = [json.loads(line) for line in (ROOT / "data/bench" / f"{name}.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
-        missing = 0
-        for r in rows:
+        rows, missing = [], 0
+        for r in read_rows(ROOT / "data/bench" / f"{name}.jsonl"):
             sid = int(r["source"].rstrip("/").split("/")[-1])
             judges, clerks = meta.get(sid, ([], []))
             missing += sid not in meta
-            r["state"] = anonymize(r["state"], judges, clerks)
-        (OUT / f"{name}.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
+            rows.append(apply_manual_fixes({**r, "state": anonymize(r["state"], judges, clerks)}))
+        write_rows(OUT / f"{name}.jsonl", rows)
         print(f"{name}: {len(rows)} rulings, without metadata: {missing}")
+    notices = OUT / f"{NOTICES}.jsonl"
+    write_rows(notices, [apply_manual_fixes(r) for r in read_rows(notices)])
+    print(f"{NOTICES}: manual fixes applied")
 
 
 if __name__ == "__main__":

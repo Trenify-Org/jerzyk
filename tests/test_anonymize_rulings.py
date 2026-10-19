@@ -4,7 +4,7 @@
 """
 import unittest
 
-from scripts.anonymize_rulings import anonymize
+from scripts.anonymize_rulings import MANUAL_FIXES, anonymize, apply_manual_fixes
 
 
 class TestInflections(unittest.TestCase):
@@ -45,6 +45,31 @@ class TestNoLossOfContent(unittest.TestCase):
 
     def test_party_initials_stay(self):
         self.assertIn("L. E.", anonymize("powód L. E. wniósł apelację"))
+
+
+class TestManualFixes(unittest.TestCase):
+    """Leaks found by the read-through of 2026-10-19 that the rules do not catch."""
+
+    def test_fix_is_applied_to_its_document_only(self):
+        row = {"id": "sad_real_dev-027", "state": "Protokolant [PROTOKOLANT] Fabiszewska \n przy udziale"}
+        other = {"id": "sad_real_dev-028", "state": row["state"]}
+        self.assertEqual(apply_manual_fixes(row)["state"], "Protokolant [PROTOKOLANT] \n przy udziale")
+        self.assertEqual(apply_manual_fixes(other)["state"], other["state"])
+
+    def test_input_row_is_not_modified(self):
+        row = {"id": "sad_real-000", "state": "z udziałem H. I. (Szok), Ł. A."}
+        self.assertEqual(apply_manual_fixes(row)["state"], "z udziałem H. I., Ł. A.")
+        self.assertEqual(row["state"], "z udziałem H. I. (Szok), Ł. A.")
+
+    def test_applying_twice_changes_nothing(self):
+        row = {"id": "sad_real_dev-047", "state": "K. Ł. , T. A. oraz Amina A. A. pozwem"}
+        once = apply_manual_fixes(row)
+        self.assertEqual(apply_manual_fixes(once), once)
+
+    def test_every_fix_removes_or_masks_text(self):
+        for fixes in MANUAL_FIXES.values():
+            for old, new in fixes:
+                self.assertTrue(len(new) < len(old) or "[" in new, (old, new))
 
 
 if __name__ == "__main__":
