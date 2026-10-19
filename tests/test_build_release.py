@@ -11,7 +11,7 @@ from pathlib import Path
 
 from scripts.build_release import (
     copy_required,
-    TEST_FILES, build_model, clean_folder, clean_row, copy_code, copy_templates, fill_markers, write_dataset,
+    TEST_FILES, build_model, build_space, clean_folder, clean_row, copy_code, copy_templates, fill_markers, write_dataset,
 )
 
 
@@ -166,6 +166,23 @@ class TestWriteDataset(unittest.TestCase):
             _write(bench / "sad_test.jsonl", json.dumps(_row("sad_test")) + "\n")
             with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
                 write_dataset(bench, anonymised, Path(d) / "out")
+
+
+class TestBuildSpace(unittest.TestCase):
+    def test_space_has_card_dockerfile_and_package_only(self):
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            _write(d / "t/space-README.md", "---\nsdk: docker\n---\n")
+            _write(d / "t/space-Dockerfile", "FROM python:3.11-slim\n")
+            _write(d / "t/LICENSE", "Apache")
+            _write(d / "gh/pyproject.toml", "[project]\n")
+            _write(d / "gh/jerzyk/serve.py", "app = 1\n")
+            _write(d / "gh/jerzyk/__pycache__/x.pyc")
+            _write(d / "gh/scripts/evaluate.py")
+            _write(d / "space/old.txt")
+            build_space(d / "t", d / "gh", d / "space")
+            files = sorted(str(f.relative_to(d / "space")) for f in (d / "space").rglob("*") if f.is_file())
+            self.assertEqual(files, ["Dockerfile", "LICENSE", "README.md", "jerzyk/serve.py", "pyproject.toml"])
 
 
 class TestFillMarkers(unittest.TestCase):

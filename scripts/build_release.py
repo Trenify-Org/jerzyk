@@ -106,6 +106,17 @@ def build_model(weights, model_dir, templates):
     _copy_if_exists(templates / "github-NOTICE", model_dir / "NOTICE")
 
 
+def build_space(templates, github, space_dir):
+    """Hugging Face Space with the demo page: card, Dockerfile and the jerzyk package (no data, no scripts)."""
+    clean_folder(space_dir)
+    space_dir.mkdir(parents=True, exist_ok=True)
+    copy_required(templates / "space-README.md", space_dir / "README.md")
+    copy_required(templates / "space-Dockerfile", space_dir / "Dockerfile")
+    copy_required(templates / "LICENSE", space_dir / "LICENSE")
+    copy_required(github / "pyproject.toml", space_dir / "pyproject.toml")
+    shutil.copytree(github / "jerzyk", space_dir / "jerzyk", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+
+
 def write_dataset(bench_dir, anonymised_dir, out_dir):
     """Writes the published *.jsonl files; generated rows are masked, real rows must be anonymised first."""
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -147,6 +158,7 @@ def main():
     _copy_if_exists(TEMPLATES / "github-NOTICE", dataset / "NOTICE")
     for d in (github, model, dataset):
         shutil.copy2(TEMPLATES / "LICENSE", d / "LICENSE")
+    build_space(TEMPLATES, github, RELEASE / "hf-space")
 
     # results go in place of <!-- RESULTS -->: on the published dataset if measured, otherwise older measurements
     published = PUBLISHED_RESULT.exists()
