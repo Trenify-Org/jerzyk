@@ -31,8 +31,8 @@ from jerzyk import Jerzyk
 
 j = Jerzyk("trenify/jerzyk-1.0")   # or a local folder
 j.ask("Dzień dobry, od rana nie mogę zalogować się do aplikacji i opłacić faktury…", domain="email")
-# {'dzial': ('platnosci_i_faktury', 0.998), 'rezygnacja': (False, 0.943),
-#  'zdenerwowany': (False, 0.675), 'pilnosc': (2, 0.623)}
+# {'dzial': ('platnosci_i_faktury', 0.998), 'rezygnacja': (False, 0.950),
+#  'zdenerwowany': (False, 0.636), 'pilnosc': (2, 0.551)}
 ```
 
 Domains with ready-made questions: `court`, `admin` (administrative / building permits), `accounting`, `email` (customer e-mail). The Polish codes `sad`, `adm`, `ksieg` used in jerzyk-bench work too. You can also ask your own questions with `j.predict(text, questions)` in the `systemone` format (`choice`, `noul` = yes/no, `score`).
