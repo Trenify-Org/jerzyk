@@ -22,7 +22,8 @@ Data sources:
   (art. 4 of the Polish Copyright Act); personal data of natural persons was replaced with [OSOBA] / [ADRES]
   before publication.
 - The customer e-mails in the jerzyk-bench test and dev splits were written with Claude (Anthropic) for
-  evaluation only. They were not used to train Jerzyk.
+  evaluation only. They were not used to train Jerzyk; the dev split was used only to fit the three
+  calibration temperatures (one number per question type).
 
 Jerzyk is an independent project and is not affiliated with TypeSafe, Convai Innovations, SpeakLeash, Alibaba,
 Anthropic or SAOS.
