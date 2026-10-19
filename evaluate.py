@@ -137,7 +137,7 @@ def main():
     mean = lambda xs: sum(xs) / len(xs)
     tabela = {}
     for (dom, qid), res in sorted(per_q.items()):
-        m = {"trafnosc": round(mean([x["ok"] for x in res]), 3)}
+        m = {"trafnosc": round(mean([x["ok"] for x in res]), 3), "n": len(res)}
         if res[0]["type"] == "noul":
             m["brier"] = round(mean([x["brier"] for x in res]), 3)
         if res[0]["type"] == "score":

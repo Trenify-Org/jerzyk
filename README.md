@@ -2,7 +2,7 @@
 
 **A small, fast Polish decision model. It does not write text: it reads a document and picks an answer from a fixed list, with a calibrated probability.**
 
-> 🇵🇱 **Po polsku:** Jerzyk to mały (322 mln parametrów), szybki model AI dla polskich dokumentów. Czyta pismo z sądu lub urzędu, dokument księgowy albo e-mail klienta i odpowiada na pytania z gotową listą odpowiedzi: jaki to rodzaj pisma, czy biegnie termin, jak bardzo jest pilne, do którego działu je skierować. Każda odpowiedź ma prawdopodobieństwo, więc niepewne przypadki można oddać człowiekowi. Działa lokalnie, także na zwykłym laptopie bez karty graficznej (ok. 0,05–0,2 s na pismo), więc dokumenty nie opuszczają firmy. Licencja Apache 2.0. Razem z modelem udostępniamy **jerzyk-bench**, pierwszy polski benchmark modeli decyzyjnych dla korespondencji urzędowej, i bibliotekę `deadlines.py`, która liczy terminy według KPC/KPA (soboty, święta).
+> 🇵🇱 **Po polsku:** Jerzyk to mały (322 mln parametrów), szybki model AI dla polskich dokumentów. Czyta pismo z sądu lub urzędu, dokument księgowy albo e-mail klienta i odpowiada na pytania z gotową listą odpowiedzi: jaki to rodzaj pisma, czy biegnie termin, jak bardzo jest pilne, do którego działu je skierować. Każda odpowiedź ma prawdopodobieństwo, więc niepewne przypadki można oddać człowiekowi. Działa lokalnie, także na zwykłym laptopie bez karty graficznej (ok. 0,05–0,2 s na pismo), więc dokumenty nie opuszczają firmy. Licencja Apache 2.0. Razem z modelem udostępniamy **jerzyk-bench**, polski benchmark modeli decyzyjnych dla korespondencji urzędowej, i bibliotekę `deadlines.py`, która liczy terminy według KPC/KPA (soboty, święta).
 
 ```text
 Document: "Sygn. akt I C 412/26 … wzywa się pełnomocnika powoda do uzupełnienia braków formalnych
@@ -47,7 +47,7 @@ Jerzyk is a **decision model** (a classifier with typed questions):
 | Court: termin | 93.3 | 85.0 | 83.3 | 82.5 |
 | **Mean over domains** | **86.4** | **80.1** | **77.3** | **79.9** |
 
-**Real documents (89 court rulings + 56 administrative notices)** — accuracy (%)
+**Real documents (89 court rulings + 56 administrative notices)** — accuracy (%), 95% confidence interval in brackets
 
 | Question | **Jerzyk 1.0** (322M) | basal-2.0-mini (1.5B) | Qwen3 8B | Bielik 11B v3 |
 |---|---|---|---|---|

@@ -5,7 +5,8 @@
 SAOS anonimizuje strony, ale publikuje skład sądu. Na prośbę autora projektu zamieniamy:
 - sędziów (metadane SAOS `judges`) → [SĘDZIA], protokolantów (`courtReporters`) → [PROTOKOLANT],
   także w formie „R. Troll” i samym nazwiskiem,
-- na wszelki wypadek imię i nazwisko po słowach „Sędzia/SSR/SSO/SSA/Ławnik/Protokolant/Prokurator/referendarz”.
+- na wszelki wypadek imię i nazwisko po słowach „Sędzia/SSR/SSO/SSA/Ławnik/Protokolant/Prokurator/referendarz”,
+- imię z listy częstych imion (także w odmianie: „Urszuli”, „Zdzisława”) z następującym nazwiskiem.
 Metadane bierzemy z lokalnego zrzutu SAOS (data/prawo/saos-od-*, prawo.py).
 """
 import glob
@@ -18,7 +19,7 @@ ROOT = Path(__file__).parent
 OUT = ROOT / "wydanie" / "anonimizacja"
 PLIKI = ["sad_real_test", "sad_real_fragmenty_test", "sad_real_dev"]
 DUZA = r"(?!Protokolant|Przewodnicz|Sędzi|Ławni|Prokurator)[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+"
-ROLE = re.compile(rf"((?:[Ss]ędzi(?:a|owie)|SSR|SSO|SSA|SR|SO|SA|[Łł]awni(?:k|cy)|[Pp]rotokolant(?:ka)?|[Pp]rokurator|"
+ROLE = re.compile(rf"((?:[Ss]ędzi(?:a|owie|ego|emu|ą|ów|ami)?|SSR|SSO|SSA|SR|SO|SA|[Łł]awni(?:k|cy)|[Pp]rotokolant(?:ka)?|[Pp]rokurator|"
                   rf"[Rr]eferendarz(?:\s+sądowy)?|[Ss]ekretarz\s+sądowy|[Aa]systent\s+sędziego|[Aa]sesor\s+sądowy|stażysta)"
                   rf"[\s:–\-.,()a-ząćęłńóśźżA-Z]{{0,40}}?)"
                   rf"\b({DUZA}(?:\s*-\s*{DUZA}|\s+{DUZA}){{0,2}})\b(?!\.)")
@@ -30,7 +31,25 @@ IMIONA = ("Anna Maria Katarzyna Małgorzata Agnieszka Barbara Ewa Krystyna Elżb
           "Mariusz Dariusz Rafał Mirosław Wojciech Robert Jacek Janusz Maciej Sławomir Jarosław Kamil Wiesław Roman Damian "
           "Przemysław Stanisław Artur Bartosz Sebastian Mateusz Daniel Arkadiusz Ryszard Waldemar Leszek Bogdan Henryk "
           "Kazimierz Zdzisław Edward Witold Ireneusz Cezary Radosław Szymon Jakub Konrad Filip Dawid Norbert").split()
-PELNE = re.compile(rf"\b(?:{'|'.join(IMIONA)})\s+{DUZA}(?:\s*-\s*{DUZA})?\b")
+
+
+def odmiany(imie):
+    """Imię w przypadkach zależnych (dopełniacz, celownik, biernik, narzędnik, miejscownik) — przybliżenie."""
+    if imie.endswith("ia"):          # Maria → Marii, Marię, Marią
+        return {imie, imie[:-1] + "i", imie[:-1] + "ę", imie[:-1] + "ą"}
+    if imie.endswith(("la", "ja")):  # Urszula → Urszuli, Urszulę; Kinga ↓
+        return {imie, imie[:-1] + "i", imie[:-1] + "ę", imie[:-1] + "ą"}
+    if imie.endswith("a"):           # Anna → Anny, Annie, Annę; Kinga → Kingi
+        rdzen = imie[:-1]
+        return {imie, rdzen + "y", rdzen + "i", rdzen + "ie", rdzen + "ę", rdzen + "ą"}
+    if imie.endswith("ek"):          # Marek → Marka, Markowi
+        rdzen = imie[:-2] + "k"
+        return {imie, rdzen + "a", rdzen + "owi", rdzen + "iem", rdzen + "u"}
+    return {imie, imie + "a", imie + "owi", imie + "em", imie + "ie", imie + "u"}  # Zdzisław → Zdzisława
+
+
+WSZYSTKIE_IMIONA = sorted({o for i in IMIONA for o in odmiany(i)}, key=len, reverse=True)
+PELNE = re.compile(rf"\b(?:{'|'.join(WSZYSTKIE_IMIONA)})\s+{DUZA}(?:\s*-\s*{DUZA})?\b")
 # Imię zostające przed znacznikiem albo przed „...” (ucięty tekst) w składzie sądu.
 RESZTA = re.compile(rf"\b{DUZA}\s+(\[(?:SĘDZIA|PROTOKOLANT|OSOBA)\])")
 
@@ -52,6 +71,17 @@ def zamien(tekst, osoby, znacznik):
     return tekst
 
 
+def anonimizuj(tekst, sedziowie=(), protokolanci=()):
+    """Tekst orzeczenia bez imion i nazwisk składu, prokuratorów i protokolantów."""
+    t = zamien(tekst, sedziowie, "[SĘDZIA]")
+    t = zamien(t, protokolanci, "[PROTOKOLANT]")
+    t = ROLE.sub(lambda m: m.group(1) + ("[OSOBA]" if not m.group(2).startswith("[") else m.group(2)), t)
+    t = RESZTA.sub(r"\1", t)
+    t = re.sub(rf"(\[(?:SĘDZIA|OSOBA|PROTOKOLANT)\])\s*[–\-]\s*{DUZA}", r"\1", t)  # „[OSOBA] – Kuchta”
+    t = re.sub(rf"(\[(?:SĘDZIA|OSOBA)\])\s+{DUZA}\s+{DUZA}\b(?!\s+(?:Sąd|Wydział))", r"\1 [SĘDZIA]", t)  # kolejny członek składu
+    return PELNE.sub("[SĘDZIA]", t[:1200]) + PELNE.sub("[OSOBA]", t[1200:])
+
+
 def main():
     meta = {}
     for f in glob.glob(str(ROOT / "data/prawo/saos-od-*/*.jsonl.gz")):
@@ -66,14 +96,7 @@ def main():
             sid = int(r["zrodlo"].rstrip("/").split("/")[-1])
             sedziowie, protokolanci = meta.get(sid, ([], []))
             braki += sid not in meta
-            t = zamien(r["state"], sedziowie, "[SĘDZIA]")
-            t = zamien(t, protokolanci, "[PROTOKOLANT]")
-            t = ROLE.sub(lambda m: m.group(1) + ("[OSOBA]" if not m.group(2).startswith("[") else m.group(2)), t)
-            t = RESZTA.sub(r"\1", t)
-            t = re.sub(rf"(\[(?:SĘDZIA|OSOBA|PROTOKOLANT)\])\s*[–\-]\s*{DUZA}", r"\1", t)  # „[OSOBA] – Kuchta”
-            t = re.sub(rf"(\[(?:SĘDZIA|OSOBA)\])\s+{DUZA}\s+{DUZA}\b(?!\s+(?:Sąd|Wydział))", r"\1 [SĘDZIA]", t)  # kolejny członek składu
-            t = PELNE.sub("[SĘDZIA]", t[:1200]) + PELNE.sub("[OSOBA]", t[1200:])
-            r["state"] = t
+            r["state"] = anonimizuj(r["state"], sedziowie, protokolanci)
         (OUT / f"{plik}.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows))
         print(f"{plik}: {len(rows)} orzeczeń, bez metadanych: {braki}")
 
