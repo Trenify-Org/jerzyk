@@ -132,8 +132,9 @@ How to read the table:
 
 - **Jerzyk is best on average**, both on generated and on real documents, and is 5–60× faster than the other models.
 - **Where it wins:** urgency (the rules follow 7/14-day thresholds in [`docs/SPEC.md`](docs/SPEC.md)), deadlines in court letters, routing questions (e-mail department, cost category) and calibration (ECE).
-- **Where larger models win:** document type of generated court letters, and of real administrative notices (Bielik).
-- **Known weakness: deadlines in long real administrative notices** (Jerzyk 71%, Bielik 80%). Always use Jerzyk together with `jerzyk.deadlines` (rule-based deadline extraction), and route low-confidence answers to a person.
+- **Where larger models win:** document type of generated court letters, and deadlines in real administrative notices (Bielik). On the document type of real notices Jerzyk and Bielik are equal.
+- **Known weakness: deadlines in long real administrative notices** (Jerzyk 73%, Bielik 82%). Always use Jerzyk together with `jerzyk.deadlines` (rule-based deadline extraction), and route low-confidence answers to a person.
+- **jerzyk-bench was built by the authors of Jerzyk.** To keep the comparison checkable, the test split was never used for training or calibration, every model was run with the same questions and scoring (`scripts/evaluate.py`), and the benchmark and evaluation code are public, so anyone can re-run it.
 - Jerzyk is trained on the conventions in `docs/SPEC.md`. The other models see them for the first time (zero-shot), so the urgency comparison is not fully apples to apples.
 - The generated test documents were written by Bielik 11B (court, administrative, accounting) and Claude (e-mails). Jerzyk's training data was written by a different model (Qwen3 8B) and comes from real documents from other offices.
 - The real documents (court rulings from SAOS, public notices from samorzad.gov.pl) never overlap with training data. Notices in the test come from offices that do not appear in training.
