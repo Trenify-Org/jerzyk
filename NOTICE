@@ -1,0 +1,28 @@
+Jerzyk — Polish decision model and jerzyk-bench
+Copyright 2026 Fundacja Trenify
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This project builds on the following third-party work:
+
+- Laya multilingual (convaiinnovations/laya-multilingual) and the `laya` Python package — base model and
+  fine-tuning tool for Jerzyk. Apache License 2.0. https://huggingface.co/convaiinnovations/laya
+- mmBERT-base (jhu-clsp/mmBERT-base) — multilingual encoder inside Laya multilingual. MIT License.
+- Bielik 11B v3.0 Instruct (speakleash/Bielik-11B-v3.0-Instruct), SpeakLeash & ACK Cyfronet AGH — wrote the
+  generated court / administrative / accounting test documents and filtered the training data. Apache License 2.0.
+- Qwen3 8B (Qwen/Qwen3-8B), Alibaba Cloud — wrote the generated training documents. Apache License 2.0.
+- llama.cpp — local inference of Bielik and Qwen during data preparation. MIT License.
+
+Data sources:
+
+- SAOS — System Analizy Orzeczeń Sądowych (https://www.saos.org.pl): real, already anonymised Polish court
+  rulings. Court rulings are official documents and are not subject to copyright (art. 4 of the Polish
+  Copyright Act).
+- samorzad.gov.pl — public notices of Polish municipal, county and state offices. Official documents
+  (art. 4 of the Polish Copyright Act); personal data of natural persons was replaced with [OSOBA] / [ADRES]
+  before publication.
+- The customer e-mails in the jerzyk-bench test and dev splits were written with Claude (Anthropic) for
+  evaluation only. They were not used to train Jerzyk.
+
+Jerzyk is an independent project and is not affiliated with TypeSafe, Convai Innovations, SpeakLeash, Alibaba,
+Anthropic or SAOS.

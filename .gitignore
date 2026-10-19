@@ -1,0 +1,13 @@
+.venv*/
+__pycache__/
+logs/
+models/
+results/
+data/prawo/
+data/real/
+data/train*/
+data/odrzucone/
+wydanie/
+*.gguf
+.DS_Store
+.coverage

@@ -1,0 +1,5 @@
+laya==0.4.8
+fastapi
+uvicorn
+pypdf
+huggingface_hub
