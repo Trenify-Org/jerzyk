@@ -107,5 +107,17 @@ class TestReadHardware(unittest.TestCase):
             self.assertEqual(read_hardware(), "NVIDIA GPU")
 
 
+class TestTableNames(unittest.TestCase):
+    def test_rows_use_english_question_names(self):
+        import contextlib
+        import io
+        from scripts.results_table import print_table
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            print_table({"M": {"adm_real.pilnosc": {"accuracy": 0.5, "n": 10}}}, "T")
+        self.assertIn("Admin. notices (real): urgency", buf.getvalue())
+        self.assertNotIn("pilnosc", buf.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main()

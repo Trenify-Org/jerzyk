@@ -3,12 +3,11 @@
   from jerzyk import Jerzyk
   j = Jerzyk("trenify/jerzyk-1.0")          # downloads from Hugging Face; or a local folder
   j.ask("Sąd Rejonowy … w terminie 7 dni od doręczenia …", domain="court")
-  # {'rodzaj': ('wezwanie_sadu', 0.97), 'termin': (True, 0.95), 'pilnosc': (3, 0.91)}
+  # {'document_type': ('court_summons', 0.97), 'deadline': (True, 0.95), 'urgency': (3, 0.91)}
 
 Domains: court, admin, accounting, email (Polish codes sad, adm, ksieg, email also work).
-Questions: rodzaj = document type, termin = is a deadline running, pilnosc = urgency 0–3,
-kategoria_kosztu = cost category, dzial = department, rezygnacja = cancels?, zdenerwowany = upset?
-Question names and answer options stay in Polish: the model was trained on them (questions.json).
+Answers come with English names (jerzyk.labels); labels="pl" gives the Polish names the model was trained on
+and jerzyk-bench uses, e.g. {'rodzaj': ('wezwanie_sadu', 0.97), 'termin': …, 'pilnosc': …}.
 """
 import copy
 import json
@@ -16,12 +15,14 @@ import re
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Tuple, Union
 
+from jerzyk.labels import to_english
 from jerzyk.questions import questions
 
 # English domain name → code used by jerzyk.questions, jerzyk-bench and the model
 DOMAINS = {"court": "sad", "admin": "adm", "accounting": "ksieg", "email": "email"}
 CALIBRATION_FILES = ("calibration.json", "kalibracja.json")  # kalibracja.json: name used before 1.0
 DEFAULT_MODEL = "trenify/jerzyk-1.0"
+LABELS = ("en", "pl")
 _HUB_ID = re.compile(r"[A-Za-z0-9][\w.-]*/[\w.-]+")
 
 
@@ -92,9 +93,14 @@ class Jerzyk:
         """Full calibrated answer in the /v1/systemone format (TypeSafe Jev) for your own questions."""
         return calibrate(self.agent.predict(state, qs), qs, self.temperatures)
 
-    def ask(self, text: str, domain: str = "court") -> Dict[str, Tuple[Any, float]]:
-        """Short form: {question: (answer, confidence)} for the ready-made questions of a domain."""
-        qs = questions(resolve_domain(domain))
+    def ask(self, text: str, domain: str = "court", labels: str = "en") -> Dict[str, Tuple[Any, float]]:
+        """Short form: {question: (answer, confidence)} for the ready-made questions of a domain.
+
+        labels="en" (default) names questions and answers in English, labels="pl" in the model's Polish."""
+        if labels not in LABELS:
+            raise ValueError(f"labels must be one of {LABELS}, not {labels!r}")
+        code = resolve_domain(domain)
+        qs = questions(code)
         out = {}
         for qid, a in self.predict(text, qs)["answers"].items():
             if a["type"] == "noul":
@@ -104,4 +110,4 @@ class Jerzyk:
                 out[qid] = (int(max(p, key=p.get)), a["confidence"])
             else:
                 out[qid] = (a["choice"], a["confidence"])
-        return out
+        return to_english(out, code) if labels == "en" else out

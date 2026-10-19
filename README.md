@@ -8,10 +8,10 @@
 Document: "Sygn. akt I C 412/26 … wzywa się pełnomocnika powoda do uzupełnienia braków formalnych
            pozwu … w terminie 7 dni od doręczenia wezwania pod rygorem zwrotu pozwu."
 
-rodzaj  (document type)     → wezwanie_sadu (court summons)     99.8%
-termin  (deadline running?) → yes                               91.1%
-pilnosc (urgency 0–3)       → 3 – critical (≤ 7 days)           99.2%
-deadlines                   → delivered 3 Nov 2026 → due 10 Nov 2026
+document_type → court_summons                             99.8%
+deadline      → yes                                       91.2%
+urgency (0–3) → 3 – critical (≤ 7 days)                   92.8%
+deadlines     → delivered 3 Nov 2026 → due 10 Nov 2026
 ```
 
 ## Quick start
@@ -31,8 +31,9 @@ from jerzyk import Jerzyk
 
 j = Jerzyk("trenify/jerzyk-1.0")   # or a local folder
 j.ask("Dzień dobry, od rana nie mogę zalogować się do aplikacji i opłacić faktury…", domain="email")
-# {'dzial': ('platnosci_i_faktury', 0.998), 'rezygnacja': (False, 0.950),
-#  'zdenerwowany': (False, 0.636), 'pilnosc': (2, 0.551)}
+# {'department': ('payments_and_invoices', 0.998), 'cancellation': (False, 0.950),
+#  'upset': (False, 0.636), 'urgency': (2, 0.551)}
+# labels="pl" gives the model's Polish names: {'dzial': ('platnosci_i_faktury', 0.998), …}
 ```
 
 Domains with ready-made questions: `court`, `admin` (administrative / building permits), `accounting`, `email` (customer e-mail). The Polish codes `sad`, `adm`, `ksieg` used in jerzyk-bench work too. You can also ask your own questions with `j.predict(text, questions)` in the `systemone` format (`choice`, `noul` = yes/no, `score`).
@@ -44,7 +45,7 @@ USE_TF=0 jerzyk-serve --port 8080      # or: python -m jerzyk.serve --port 8080;
 open http://127.0.0.1:8080             # demo page
 curl -s localhost:8080/v1/systemone -H 'content-type: application/json' -d '{
   "state": "Faktura VAT nr FV/12/2026 … termin płatności 14 dni",
-  "questions": {"rodzaj": {"type": "choice", "instructions": "Jaki to dokument?",
+  "questions": {"document_type": {"type": "choice", "instructions": "Jaki to dokument?",
                  "criteria": {"faktura": "faktura VAT", "umowa": "umowa", "inne": "inne"}}}}'
 ```
 
@@ -62,16 +63,18 @@ deadlines.nearest("… w terminie 7 dni od doręczenia …", delivery=dt.date(20
 # Deadline(date=2026-11-10, kind='from_delivery', …) — Saturdays and public holidays shift the deadline (KPC/KPA)
 ```
 
-**Glossary.** Question names and answer options stay in Polish, because the model was trained on them.
+**Questions and answers.**
 
-| Name | Meaning |
+| Domain | Questions (`ask()` names; Polish names with `labels="pl"`) |
 |---|---|
-| `sad`, `adm`, `ksieg`, `email` | domain codes in jerzyk-bench: court, administrative, accounting, customer e-mail |
-| `rodzaj` | document type |
-| `termin` | is a deadline for the recipient running? (yes/no) |
-| `pilnosc` | urgency: 0 nothing to do, 1 no deadline or > 14 days, 2 8–14 days, 3 ≤ 7 days or immediately |
-| `kategoria_kosztu` | cost category (accounting) |
-| `dzial`, `rezygnacja`, `zdenerwowany` | e-mail: department, cancels or terminates?, customer upset? |
+| `court` (`sad`) | `document_type` (`rodzaj`): judgment, court_decision, payment_order, court_summons, hearing_notice, statement_of_claim, party_letter, other · `deadline` (`termin`) · `urgency` (`pilnosc`) |
+| `admin` (`adm`) | `document_type`: decision, procedural_decision, request_to_complete, notice, objection_to_notification, agreement_or_opinion, project_correspondence, other · `deadline` · `urgency` |
+| `accounting` (`ksieg`) | `document_type`: invoice, corrective_invoice, receipt, accounting_note, bank_statement, contract, tax_office_letter, social_insurance_letter, payment_demand, other · `cost_category` (`kategoria_kosztu`): goods_for_resale, materials, external_services, utilities_and_telecom, fuel_and_car, rent, training, entertainment, fixed_asset, not_applicable · `deadline` · `urgency` |
+| `email` (customer e-mail) | `department` (`dzial`): sales, orders_and_deliveries, complaints_and_returns, payments_and_invoices, technical_support, other · `cancellation` (`rezygnacja`) · `upset` (`zdenerwowany`) · `urgency` |
+
+`deadline` = does the letter set or open a deadline for the recipient (yes/no). `urgency` 0–3: nothing to do / no deadline or > 14 days / 8–14 days / ≤ 7 days or immediately. Full rules: `SPEC.md`.
+
+The model itself reads Polish questions and answer options (it was trained on them, see `jerzyk/questions.py`); `ask()` translates the result to English afterwards (`jerzyk/labels.py`), which does not change any prediction. jerzyk-bench uses the Polish names.
 
 ## Why
 
@@ -90,30 +93,30 @@ Jerzyk is a **decision model** (a classifier with typed questions):
 
 | Question | **Jerzyk 1.0** (322M) | basal-2.0-mini (1.5B) | Qwen3 8B | Bielik 11B v3 |
 |---|---|---|---|---|
-| Administrative: pilnosc | 77.5 | 61.7 | 42.5 | 54.2 |
-| Administrative: rodzaj | 90.0 | 92.5 | 90.8 | 95.0 |
-| Administrative: termin | 82.5 | 79.2 | 84.2 | 83.3 |
-| Customer e-mail: dzial | 93.3 | 88.3 | 89.2 | 88.3 |
-| Customer e-mail: pilnosc | 79.2 | 74.2 | 70.8 | 80.8 |
-| Customer e-mail: rezygnacja | 99.2 | 100.0 | 97.5 | 96.7 |
-| Customer e-mail: zdenerwowany | 91.7 | 90.8 | 77.5 | 85.0 |
-| Accounting: kategoria_kosztu | 97.5 | 95.0 | 85.0 | 75.8 |
-| Accounting: pilnosc | 64.2 | 35.8 | 48.3 | 63.3 |
-| Accounting: rodzaj | 94.2 | 91.7 | 95.8 | 95.8 |
-| Accounting: termin | 85.8 | 95.8 | 94.2 | 77.5 |
-| Court: pilnosc | 80.0 | 42.5 | 38.3 | 54.2 |
-| Court: rodzaj | 84.2 | 96.7 | 94.2 | 92.5 |
-| Court: termin | 93.3 | 85.0 | 83.3 | 82.5 |
+| Administrative: urgency | 77.5 | 61.7 | 42.5 | 54.2 |
+| Administrative: document_type | 90.0 | 92.5 | 90.8 | 95.0 |
+| Administrative: deadline | 82.5 | 79.2 | 84.2 | 83.3 |
+| Customer e-mail: department | 93.3 | 88.3 | 89.2 | 88.3 |
+| Customer e-mail: urgency | 79.2 | 74.2 | 70.8 | 80.8 |
+| Customer e-mail: cancellation | 99.2 | 100.0 | 97.5 | 96.7 |
+| Customer e-mail: upset | 91.7 | 90.8 | 77.5 | 85.0 |
+| Accounting: cost_category | 97.5 | 95.0 | 85.0 | 75.8 |
+| Accounting: urgency | 64.2 | 35.8 | 48.3 | 63.3 |
+| Accounting: document_type | 94.2 | 91.7 | 95.8 | 95.8 |
+| Accounting: deadline | 85.8 | 95.8 | 94.2 | 77.5 |
+| Court: urgency | 80.0 | 42.5 | 38.3 | 54.2 |
+| Court: document_type | 84.2 | 96.7 | 94.2 | 92.5 |
+| Court: deadline | 93.3 | 85.0 | 83.3 | 82.5 |
 | **Mean over domains** | **86.4** | **80.1** | **77.3** | **79.9** |
 
 **Real documents (89 court rulings + 56 administrative notices)** — accuracy (%), 95% confidence interval in brackets
 
 | Question | **Jerzyk 1.0** (322M) | basal-2.0-mini (1.5B) | Qwen3 8B | Bielik 11B v3 |
 |---|---|---|---|---|
-| Admin. notices (real): pilnosc | 58.9 (46–71) | 37.5 (26–51) | 48.2 (36–61) | 32.1 (21–45) |
-| Admin. notices (real): rodzaj | 85.7 (74–93) | 76.8 (64–86) | 83.9 (72–91) | 85.7 (74–93) |
-| Admin. notices (real): termin | 73.2 (60–83) | 76.8 (64–86) | 62.5 (49–74) | 82.1 (70–90) |
-| Court rulings (real): rodzaj | 98.9 (94–100) | 93.3 (86–97) | 100.0 (96–100) | 100.0 (96–100) |
+| Admin. notices (real): urgency | 58.9 (46–71) | 37.5 (26–51) | 48.2 (36–61) | 32.1 (21–45) |
+| Admin. notices (real): document_type | 85.7 (74–93) | 76.8 (64–86) | 83.9 (72–91) | 85.7 (74–93) |
+| Admin. notices (real): deadline | 73.2 (60–83) | 76.8 (64–86) | 62.5 (49–74) | 82.1 (70–90) |
+| Court rulings (real): document_type | 98.9 (94–100) | 93.3 (86–97) | 100.0 (96–100) | 100.0 (96–100) |
 | **Mean over domains** | **85.8** | **78.5** | **82.4** | **83.3** |
 
 | | **Jerzyk 1.0** (322M) | basal-2.0-mini (1.5B) | Qwen3 8B | Bielik 11B v3 |
@@ -128,7 +131,7 @@ Models compared: [Jerzyk 1.0](https://huggingface.co/trenify/jerzyk-1.0) (calibr
 How to read the table:
 
 - **Jerzyk is best on average**, both on generated and on real documents, and is 5–60× faster than the other models.
-- **Where it wins:** urgency (`pilnosc`; the rules follow 7/14-day thresholds in [`docs/SPEC.md`](docs/SPEC.md)), deadlines in court letters, routing questions (e-mail department, cost category) and calibration (ECE).
+- **Where it wins:** urgency (the rules follow 7/14-day thresholds in [`docs/SPEC.md`](docs/SPEC.md)), deadlines in court letters, routing questions (e-mail department, cost category) and calibration (ECE).
 - **Where larger models win:** document type of generated court letters, and of real administrative notices (Bielik).
 - **Known weakness: deadlines in long real administrative notices** (Jerzyk 71%, Bielik 80%). Always use Jerzyk together with `jerzyk.deadlines` (rule-based deadline extraction), and route low-confidence answers to a person.
 - Jerzyk is trained on the conventions in `docs/SPEC.md`. The other models see them for the first time (zero-shot), so the urgency comparison is not fully apples to apples.

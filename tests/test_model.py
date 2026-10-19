@@ -113,7 +113,18 @@ class TestAsk(unittest.TestCase):
         self.assertEqual(j.ask("text", domain="accounting"), j.ask("text", domain="ksieg"))
 
     def test_ask_defaults_to_court(self):
-        self.assertEqual(set(_jerzyk().ask("text")), set(questions("sad")))
+        self.assertEqual(set(_jerzyk().ask("text", labels="pl")), set(questions("sad")))
+
+    def test_ask_answers_in_english_by_default(self):
+        self.assertEqual(set(_jerzyk().ask("text")), {"document_type", "deadline", "urgency"})
+        self.assertEqual(_jerzyk().ask("text")["document_type"][0], "judgment")  # the fake picks the first option
+
+    def test_polish_labels_are_the_model_vocabulary(self):
+        self.assertEqual(_jerzyk().ask("text", labels="pl")["rodzaj"][0], "wyrok")
+
+    def test_unknown_labels_is_an_error(self):
+        with self.assertRaises(ValueError):
+            _jerzyk().ask("text", labels="de")
 
 
 if __name__ == "__main__":

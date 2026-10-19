@@ -15,6 +15,8 @@ import math
 from pathlib import Path
 from statistics import mean
 
+from jerzyk.labels import QUESTION_NAMES
+
 ROOT = Path(__file__).resolve().parent.parent
 RESULTS = ROOT / "results"
 DATA_BENCH = ROOT / "data" / "bench"
@@ -134,7 +136,7 @@ def print_table(data, title, interval=False):
     print("|---|" + "---|" * len(columns))
     for q in questions:
         d, n = q.split(".")
-        print(f"| {DOMAIN_NAMES[d]}: {n} | " + " | ".join(cell(data[k][q], interval) if q in data[k] else "–" for k in columns) + " |")
+        print(f"| {DOMAIN_NAMES[d]}: {QUESTION_NAMES.get(n, n)} | " + " | ".join(cell(data[k][q], interval) if q in data[k] else "–" for k in columns) + " |")
     print("| **Mean over domains** | " + " | ".join(f"**{mean_over_domains(data[k]) * 100:.1f}**" for k in columns) + " |")
 
 

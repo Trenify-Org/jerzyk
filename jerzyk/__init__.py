@@ -5,7 +5,7 @@
     j.ask("…tekst pisma…", domain="court")
 
 Modules: jerzyk.model (the model and calibration), jerzyk.questions (ready-made questions),
-jerzyk.deadlines (rule-based Polish deadlines), jerzyk.serve (HTTP server and demo page).
+jerzyk.labels (their English names), jerzyk.deadlines (rule-based Polish deadlines), jerzyk.serve (HTTP server and demo page).
 """
 from jerzyk.model import DEFAULT_MODEL, DOMAINS, Jerzyk, calibrate, load_calibration, resolve_domain, resolve_model
 
