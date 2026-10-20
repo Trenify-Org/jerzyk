@@ -4,6 +4,8 @@ title: "Jerzyk: a small Polish decision model for official correspondence, and j
 type: software
 authors:
   - name: "Fundacja Trenify"
+    email: "contact@trenify.org"
+    website: "https://trenify.org"
 version: "1.0.0"
 license: Apache-2.0
 repository-code: "https://github.com/Trenify-Org/jerzyk"

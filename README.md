@@ -178,7 +178,7 @@ No training data comes from closed-model APIs. Generators and filters are open-w
 
 ## About
 
-Jerzyk and jerzyk-bench are published by **Fundacja Trenify** (Trenify Foundation), a Polish non-profit foundation. Issues and pull requests are welcome on [GitHub](https://github.com/Trenify-Org/jerzyk).
+Jerzyk and jerzyk-bench are published by **Fundacja Trenify** (Trenify Foundation), a Polish non-profit foundation. Issues and pull requests are welcome on [GitHub](https://github.com/Trenify-Org/jerzyk). Contact: [contact@trenify.org](mailto:contact@trenify.org) (also for security, personal-data and copyright reports).
 
 ## Citation
 

@@ -3,15 +3,15 @@
 ## Reporting a vulnerability
 
 Please report security problems privately through GitHub: **Security → Report a vulnerability** in this repository
-(private vulnerability reporting). Do not open a public issue for a vulnerability.
+(private vulnerability reporting), or by e-mail to [contact@trenify.org](mailto:contact@trenify.org). Do not open a public issue for a vulnerability.
 
 We aim to answer within 7 days.
 
 ## Personal data in jerzyk-bench
 
-If you find personal data in the benchmark (for example a name that the anonymisation missed), report it in the
-*Community* tab of [trenify/jerzyk-bench](https://huggingface.co/datasets/trenify/jerzyk-bench) or in a GitHub issue
-without quoting the data. We will remove it.
+If you find personal data in the benchmark (for example a name that the anonymisation missed), write to
+[contact@trenify.org](mailto:contact@trenify.org) with the document id. Please do not quote the data in public issues or discussions. We will
+remove it. The same address handles requests from people the documents concern (GDPR) and copyright requests.
 
 ## Running the server
 
