@@ -118,6 +118,16 @@ class TestTableNames(unittest.TestCase):
         self.assertIn("Admin. notices (real): urgency", buf.getvalue())
         self.assertNotIn("pilnosc", buf.getvalue())
 
+    def test_model_without_results_gets_dashes(self):
+        import contextlib
+        import io
+        from scripts.results_table import print_table
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            print_table({"A": {"sad.rodzaj": {"accuracy": 0.5}}, "B": {}}, "T")
+        self.assertIn("| Court: document_type | 50.0 | – |", buf.getvalue())
+        self.assertIn("| **Mean over domains** | **50.0** | – |", buf.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

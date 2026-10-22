@@ -12,6 +12,7 @@ English ones (result, questions, accuracy, ...). Old keys are renamed on load.
 import argparse
 import json
 import math
+import sys
 from pathlib import Path
 from statistics import mean
 
@@ -73,6 +74,10 @@ def normalise_file(data):
 def load_result(name):
     """The `result` part of results/bench-<name>.json, with English keys."""
     return normalise_file(json.loads((RESULTS / f"bench-{name}.json").read_text(encoding="utf-8")))["result"]
+
+
+def has_result(name):
+    return (RESULTS / f"bench-{name}.json").exists()
 
 
 def fill_n(questions, counts):
@@ -137,7 +142,8 @@ def print_table(data, title, interval=False):
     for q in questions:
         d, n = q.split(".")
         print(f"| {DOMAIN_NAMES[d]}: {QUESTION_NAMES.get(n, n)} | " + " | ".join(cell(data[k][q], interval) if q in data[k] else "–" for k in columns) + " |")
-    print("| **Mean over domains** | " + " | ".join(f"**{mean_over_domains(data[k]) * 100:.1f}**" for k in columns) + " |")
+    print("| **Mean over domains** | " + " | ".join(f"**{mean_over_domains(data[k]) * 100:.1f}**" if data[k] else "–"
+                                                  for k in columns) + " |")
 
 
 def read_hardware():
@@ -157,16 +163,22 @@ def main():
     args = ap.parse_args()
     args.hardware = args.hardware or (args.published and read_hardware()) or DEFAULT_HARDWARE
     models = MODELS_PUB if args.published else MODELS
-    gen = {m: merged_questions(p, e) for m, (p, e, _) in models.items()}
+    # a model without results (e.g. basal, measured later on a Mac) gets "–" in its column
+    measured = {m: has_result(p) and has_result(r) for m, (p, _, r) in models.items()}
+    for m, ok in measured.items():
+        if not ok:
+            print(f"WARNING: no results for {m}, its column shows –", file=sys.stderr)
+    gen = {m: merged_questions(p, e) if measured[m] else {} for m, (p, e, _) in models.items()}
     counts = document_counts(DATA_BENCH)
-    real = {m: fill_n(load_result(r)["questions"], counts) for m, (_, _, r) in models.items()}
+    real = {m: fill_n(load_result(r)["questions"], counts) if measured[m] else {} for m, (_, _, r) in models.items()}
     print_table(gen, "Generated test set (480 documents)")
     print_table(real, "Real documents (89 court rulings + 56 administrative notices)", interval=True)
     print("\n| | " + " | ".join(models) + " |\n|---|" + "---|" * len(models))
     print("| ECE, real documents (lower = better) | " +
-          " | ".join(f"{load_result(r)['ece']:.3f}" for _, _, r in models.values()) + " |")
+          " | ".join(f"{load_result(r)['ece']:.3f}" if measured[m] else "–" for m, (_, _, r) in models.items()) + " |")
     print(f"| Median latency per document ({args.hardware}) | " +
-          " | ".join(f"{load_result(r)['ms_median'] / 1000:.2f} s" for _, _, r in models.values()) + " |")
+          " | ".join(f"{load_result(r)['ms_median'] / 1000:.2f} s" if measured[m] else "–"
+                     for m, (_, _, r) in models.items()) + " |")
     print("\nModels compared: "
           "[Jerzyk 1.0](https://huggingface.co/trenify/jerzyk-1.0) (calibrated); "
           "[basal-2.0-mini](https://huggingface.co/Remek/basal-2.0-mini-MLX-8bit) (MLX 8-bit, native `/v1/systemone`); "
