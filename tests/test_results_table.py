@@ -9,7 +9,8 @@ from pathlib import Path
 from unittest import mock
 
 from scripts import results_table
-from scripts.results_table import cell, document_counts, fill_n, model_index, normalise_file, read_hardware, wilson
+from scripts.results_table import (cell, document_counts, fill_n, latency_cell, model_index, normalise_file,
+                                   read_hardware, wilson)
 
 
 class TestWilson(unittest.TestCase):
@@ -127,6 +128,14 @@ class TestTableNames(unittest.TestCase):
             print_table({"A": {"sad.rodzaj": {"accuracy": 0.5}}, "B": {}}, "T")
         self.assertIn("| Court: document_type | 50.0 | – |", buf.getvalue())
         self.assertIn("| **Mean over domains** | **50.0** | – |", buf.getvalue())
+
+
+class LatencyCellTest(unittest.TestCase):
+    def test_same_machine(self):
+        self.assertEqual(latency_cell("Qwen3 8B", 240, {}), "0.24 s")
+
+    def test_other_machine_is_labelled(self):
+        self.assertEqual(latency_cell("basal", 1130, {"basal": "Apple M1, MLX"}), "1.13 s (Apple M1, MLX)")
 
 
 if __name__ == "__main__":

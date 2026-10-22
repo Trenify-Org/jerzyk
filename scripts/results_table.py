@@ -40,6 +40,9 @@ RESULT_KEYS = {"n_pism": "n_documents", "trafnosc_srednia_dziedzin": "mean_accur
                "ms_mediana": "ms_median", "pytania": "questions"}
 METRIC_KEYS = {"trafnosc": "accuracy", "trafnosc_pm1": "accuracy_pm1"}
 DEFAULT_HARDWARE = "all models on the same computer"
+# models of the published table measured on another machine than the rest (basal runs only on a Mac, MLX);
+# their latency is labelled with that machine, because it is not comparable with the others
+OTHER_HARDWARE_PUB = {"basal-2.0-mini (1.5B)": "Apple M1, MLX"}
 
 
 def wilson(p, n, z=1.96):
@@ -146,6 +149,12 @@ def print_table(data, title, interval=False):
                                                   for k in columns) + " |")
 
 
+def latency_cell(model, ms_median, other_hardware):
+    """Median latency in seconds; a model measured on another machine gets that machine in brackets."""
+    s = f"{ms_median / 1000:.2f} s"
+    return f"{s} ({other_hardware[model]})" if model in other_hardware else s
+
+
 def read_hardware():
     """Machine name written by evaluate_published.sh (the old file name is still read as a fallback)."""
     for path in (RESULTS / "hardware-published.txt", RESULTS / "sprzet-pub.txt"):
@@ -176,8 +185,9 @@ def main():
     print("\n| | " + " | ".join(models) + " |\n|---|" + "---|" * len(models))
     print("| ECE, real documents (lower = better) | " +
           " | ".join(f"{load_result(r)['ece']:.3f}" if measured[m] else "–" for m, (_, _, r) in models.items()) + " |")
+    other_hardware = OTHER_HARDWARE_PUB if args.published else {}
     print(f"| Median latency per document ({args.hardware}) | " +
-          " | ".join(f"{load_result(r)['ms_median'] / 1000:.2f} s" if measured[m] else "–"
+          " | ".join(latency_cell(m, load_result(r)["ms_median"], other_hardware) if measured[m] else "–"
                      for m, (_, _, r) in models.items()) + " |")
     print("\nModels compared: "
           "[Jerzyk 1.0](https://huggingface.co/trenify/jerzyk-1.0) (calibrated); "

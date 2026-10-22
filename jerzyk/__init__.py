@@ -9,5 +9,5 @@ jerzyk.labels (their English names), jerzyk.deadlines (rule-based Polish deadlin
 """
 from jerzyk.model import DEFAULT_MODEL, DOMAINS, Jerzyk, calibrate, load_calibration, resolve_domain, resolve_model
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __all__ = ["DEFAULT_MODEL", "DOMAINS", "Jerzyk", "calibrate", "load_calibration", "resolve_domain", "resolve_model"]

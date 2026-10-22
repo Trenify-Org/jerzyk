@@ -93,36 +93,36 @@ Jerzyk is a **decision model** (a classifier with typed questions):
 
 | Question | **Jerzyk 1.0** (322M) | basal-2.0-mini (1.5B) | Qwen3 8B | Bielik 11B v3 |
 |---|---|---|---|---|
-| Administrative: urgency | 77.5 | – | 41.7 | 54.2 |
-| Administrative: document_type | 90.0 | – | 90.8 | 95.0 |
-| Administrative: deadline | 82.5 | – | 83.3 | 83.3 |
-| Customer e-mail: department | 93.3 | – | 89.2 | 89.2 |
-| Customer e-mail: urgency | 79.2 | – | 70.0 | 80.0 |
-| Customer e-mail: cancellation | 99.2 | – | 97.5 | 96.7 |
-| Customer e-mail: upset | 91.7 | – | 77.5 | 85.8 |
-| Accounting: cost_category | 97.5 | – | 85.8 | 75.8 |
-| Accounting: urgency | 64.2 | – | 45.8 | 62.5 |
-| Accounting: document_type | 94.2 | – | 95.8 | 95.8 |
-| Accounting: deadline | 85.8 | – | 93.3 | 76.7 |
-| Court: urgency | 80.8 | – | 40.0 | 54.2 |
-| Court: document_type | 84.2 | – | 94.2 | 92.5 |
-| Court: deadline | 93.3 | – | 82.5 | 82.5 |
-| **Mean over domains** | **86.4** | – | **77.0** | **79.9** |
+| Administrative: urgency | 77.5 | 61.7 | 41.7 | 54.2 |
+| Administrative: document_type | 90.0 | 93.3 | 90.8 | 95.0 |
+| Administrative: deadline | 82.5 | 79.2 | 83.3 | 83.3 |
+| Customer e-mail: department | 93.3 | 88.3 | 89.2 | 89.2 |
+| Customer e-mail: urgency | 79.2 | 75.0 | 70.0 | 80.0 |
+| Customer e-mail: cancellation | 99.2 | 100.0 | 97.5 | 96.7 |
+| Customer e-mail: upset | 91.7 | 90.8 | 77.5 | 85.8 |
+| Accounting: cost_category | 97.5 | 95.0 | 85.8 | 75.8 |
+| Accounting: urgency | 64.2 | 35.8 | 45.8 | 62.5 |
+| Accounting: document_type | 94.2 | 91.7 | 95.8 | 95.8 |
+| Accounting: deadline | 85.8 | 95.8 | 93.3 | 76.7 |
+| Court: urgency | 80.8 | 42.5 | 40.0 | 54.2 |
+| Court: document_type | 84.2 | 96.7 | 94.2 | 92.5 |
+| Court: deadline | 93.3 | 84.2 | 82.5 | 82.5 |
+| **Mean over domains** | **86.4** | **80.2** | **77.0** | **79.9** |
 
 **Real documents (89 court rulings + 56 administrative notices)** — accuracy (%), 95% confidence interval in brackets
 
 | Question | **Jerzyk 1.0** (322M) | basal-2.0-mini (1.5B) | Qwen3 8B | Bielik 11B v3 |
 |---|---|---|---|---|
-| Admin. notices (real): urgency | 58.9 (46–71) | – | 50.0 (37–63) | 30.4 (20–43) |
-| Admin. notices (real): document_type | 85.7 (74–93) | – | 83.9 (72–91) | 85.7 (74–93) |
-| Admin. notices (real): deadline | 71.4 (58–82) | – | 64.3 (51–76) | 78.6 (66–87) |
-| Court rulings (real): document_type | 98.9 (94–100) | – | 100.0 (96–100) | 100.0 (96–100) |
-| **Mean over domains** | **85.5** | – | **83.0** | **82.5** |
+| Admin. notices (real): urgency | 58.9 (46–71) | 32.1 (21–45) | 50.0 (37–63) | 30.4 (20–43) |
+| Admin. notices (real): document_type | 85.7 (74–93) | 78.6 (66–87) | 83.9 (72–91) | 85.7 (74–93) |
+| Admin. notices (real): deadline | 71.4 (58–82) | 75.0 (62–84) | 64.3 (51–76) | 78.6 (66–87) |
+| Court rulings (real): document_type | 98.9 (94–100) | 94.4 (88–98) | 100.0 (96–100) | 100.0 (96–100) |
+| **Mean over domains** | **85.5** | **78.1** | **83.0** | **82.5** |
 
 | | **Jerzyk 1.0** (322M) | basal-2.0-mini (1.5B) | Qwen3 8B | Bielik 11B v3 |
 |---|---|---|---|---|
-| ECE, real documents (lower = better) | 0.106 | – | 0.191 | 0.154 |
-| Median latency per document (NVIDIA GeForce RTX 5080 Laptop GPU) | 0.02 s | – | 0.24 s | 0.41 s |
+| ECE, real documents (lower = better) | 0.106 | 0.112 | 0.191 | 0.154 |
+| Median latency per document (NVIDIA GeForce RTX 5080 Laptop GPU) | 0.02 s | 1.13 s (Apple M1, MLX) | 0.24 s | 0.41 s |
 
 Models compared: [Jerzyk 1.0](https://huggingface.co/trenify/jerzyk-1.0) (calibrated); [basal-2.0-mini](https://huggingface.co/Remek/basal-2.0-mini-MLX-8bit) (MLX 8-bit, native `/v1/systemone`); [Qwen3 8B](https://huggingface.co/Qwen/Qwen3-8B-GGUF) and [Bielik 11B v3.0 Instruct](https://huggingface.co/speakleash/Bielik-11B-v3.0-Instruct-GGUF) (GGUF Q4_K_M in llama.cpp, zero-shot, answer chosen from option log-probabilities). *Mean over domains* averages the questions of each domain first, then the domains, so every domain counts equally.
 
@@ -132,7 +132,7 @@ How to read the table:
 - **Jerzyk is best on average**, both on generated and on real documents, and is 5–60× faster than the other models.
 - **Where it wins:** urgency (the rules follow 7/14-day thresholds in [`docs/SPEC.md`](docs/SPEC.md)), deadlines in court letters, routing questions (e-mail department, cost category) and calibration (ECE).
 - **Where larger models win:** document type of generated court letters, and deadlines in real administrative notices (Bielik). On the document type of real notices Jerzyk and Bielik are equal.
-- **Known weakness: deadlines in long real administrative notices** (Jerzyk 73%, Bielik 82%). Always use Jerzyk together with `jerzyk.deadlines` (rule-based deadline extraction), and route low-confidence answers to a person.
+- **Known weakness: deadlines in long real administrative notices** (Jerzyk 71%, Bielik 79%). Always use Jerzyk together with `jerzyk.deadlines` (rule-based deadline extraction), and route low-confidence answers to a person.
 - **jerzyk-bench was built by the authors of Jerzyk.** To keep the comparison checkable, the test split was never used for training or calibration, every model was run with the same questions and scoring (`scripts/evaluate.py`), and the benchmark and evaluation code are public, so anyone can re-run it.
 - Jerzyk is trained on the conventions in `docs/SPEC.md`. The other models see them for the first time (zero-shot), so the urgency comparison is not fully apples to apples.
 - The generated test documents were written by Bielik 11B (court, administrative, accounting) and Claude (e-mails). Jerzyk's training data was written by a different model (Qwen3 8B) and comes from real documents from other offices.

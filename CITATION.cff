@@ -6,7 +6,7 @@ authors:
   - name: "Fundacja Trenify"
     email: "contact@trenify.org"
     website: "https://trenify.org"
-version: "1.0.0"
+version: "1.0.1"
 license: Apache-2.0
 repository-code: "https://github.com/Trenify-Org/jerzyk"
 url: "https://huggingface.co/trenify/jerzyk-1.0"

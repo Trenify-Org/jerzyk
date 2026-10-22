@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.1 — 2026-10-22
+
+Same model weights as 1.0.0. Only the reported results changed.
+
+- **Results re-measured on the published version of jerzyk-bench** (text after anonymisation): Jerzyk 1.0, Qwen3 8B and
+  Bielik 11B on an NVIDIA RTX 5080 Laptop GPU, basal-2.0-mini on an Apple M1 (MLX). Jerzyk 1.0 scores 86.4% on generated
+  and 85.5% on real documents (85.8% before anonymisation); the ranking of the models is unchanged.
+- **basal-2.0-mini** added to the re-measured tables; its latency is labelled with the machine it was measured on.
+- **95% confidence intervals** for the real documents in the results tables.
+
 ## 1.0.0 — 2026
 
 First public release.
